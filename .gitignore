@@ -1,8 +1,1 @@
-# Ignorer les fichiers temporaires
-*.tmp
-
-# Ignorer les fichiers de configuration locaux
-config.local
-
-# Ignorer le dossier de dépendances Node.js
 node_modules/
