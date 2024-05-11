@@ -34,6 +34,7 @@ async function add(req, res, next) {
                 planCours: req.body.planCours,
                 id_enseignant: req.body.id_enseignant,
                 id_classe: req.body.id_classe,
+                id_matiere: req.body.id_matiere,
                 documents: documents
             });
 

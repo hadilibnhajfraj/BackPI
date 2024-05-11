@@ -17,6 +17,8 @@ const coursRouter = require("../BackPI/routes/cours.js");
 const observationRouter = require("../BackPI/routes/observation.js");
 const userRouter = require("../BackPI/routes/user.js");
 const parentRouter = require("../BackPI/routes/parent.js");
+const matiereRouter = require("../BackPI/routes/matiere.js");
+
 
 var app = express();
 
@@ -36,6 +38,7 @@ app.use("/cours", coursRouter);
 app.use("/observation",observationRouter);
 app.use("/user", userRouter);
 app.use("/parent", parentRouter);
+app.use("/matiere", matiereRouter);
 
 const server = http.createServer(app);
 
