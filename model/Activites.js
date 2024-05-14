@@ -11,9 +11,9 @@ const Activites = new Schema({
   date_act: Date,
   description: String,
   local: String,
+  nblimite:String,
   galerie: [
     {
-      // Champ pour stocker plusieurs images
       data: Buffer, // Données de l'image
       contentType: String, // Type de contenu de l'image
     },
