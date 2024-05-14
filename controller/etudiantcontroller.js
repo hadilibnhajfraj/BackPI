@@ -1,5 +1,5 @@
 const Etudiant = require ("../model/Etudiant");
-
+const Parent = require ("../model/Parent.js");
 async function add(req, res, next){
     try{
         const etudiant = new Etudiant(req.body);
@@ -10,5 +10,14 @@ async function add(req, res, next){
         console.log (err);
     }
 }
-
-module.exports = { add };
+async function addParent(req, res, next){
+    try{
+        const parent = new Parent(req.body);
+        await parent.save();
+        
+        res.status(200).send ("Parent add");
+    }catch(err){
+        console.log (err);
+    }
+}
+module.exports = { add , addParent };
