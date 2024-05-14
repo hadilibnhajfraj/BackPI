@@ -10,6 +10,7 @@ const Seance = new Schema({
     matiere:{ type: Schema.Types.ObjectId, ref: 'Matiere', required: true },
     salle:{ type: Schema.Types.ObjectId, ref: 'Salle', required: true },
     class: { type: Schema.Types.ObjectId, ref: 'Classe', required: true },
+    enseignant: { type: Schema.Types.ObjectId, ref: 'User', required: true }
 });
 
 module.exports = mongoose.model("Seance", Seance);
