@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+<<<<<<< HEAD
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",
     "express": "^4.19.2",
@@ -18,6 +19,12 @@
     "nodemon": "^3.1.0",
     "socket.io": "^4.7.5",
     "twig": "^1.17.1",
+=======
+    "body-parser": "^1.20.2",
+    "express": "^4.19.2",
+    "mongoose": "^8.3.3",
+    "nodemon": "^3.1.0",
+>>>>>>> 479e9992a8db6f55c26f9d845412dc73853ab256
     "yup": "^1.4.0"
   }
 }
