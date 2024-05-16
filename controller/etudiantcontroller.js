@@ -1,11 +1,11 @@
-const Etudiant = require ("../model/Etudiant");
+const User = require ("../model/User.js");
 const Parent = require ("../model/Parent.js");
 async function add(req, res, next){
     try{
-        const etudiant = new Etudiant(req.body);
+        const etudiant = new User(req.body);
         await etudiant.save();
         
-        res.status(200).send ("Etudiant add");
+        res.status(200).send ("User add");
     }catch(err){
         console.log (err);
     }

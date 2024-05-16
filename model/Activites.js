@@ -6,12 +6,12 @@ const Activites = new Schema({
   localisation: {
     type: String,
     enum: ["interieur", "exterieur"],
-    required: true,
+    
   },
   date_act: Date,
   description: String,
   local: String,
-  nblimite:String,
+  nblimite: Number,
   galerie: [
     {
       data: Buffer, // Données de l'image

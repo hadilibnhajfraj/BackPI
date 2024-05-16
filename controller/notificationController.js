@@ -55,32 +55,34 @@ async function envoyerNotification(req, res) {
 }
 
 async function marquerCommeLue(req, res) {
-    try {
-      const notificationId = req.params.notificationId; // Récupérer l'identifiant de la notification depuis les paramètres d'URL
-  
-      // Mettre à jour le statut de la notification dans la base de données
-      const notification = await Notification.findByIdAndUpdate(
-        notificationId,
-        { statut: "lue" },
-        { new: true }
-      );
-  
-      if (!notification) {
-        // Si aucune notification avec cet ID n'est trouvée
-        return res.status(404).json({ erreur: "Notification introuvable" });
-      }
-  
-      console.log("Notification marquée comme lue :", notification);
-      res.status(200).json(notification); // Répondre avec la notification mise à jour
-    } catch (erreur) {
-      console.error(
-        "Erreur lors du marquage de la notification comme lue :",
-        erreur
-      );
-      res.status(500).json({ erreur: "Erreur lors du marquage de la notification comme lue" });
+  try {
+    const notificationId = req.params.notificationId; // Récupérer l'identifiant de la notification depuis les paramètres d'URL
+
+    // Mettre à jour le statut de la notification dans la base de données
+    const notification = await Notification.findByIdAndUpdate(
+      notificationId,
+      { statut: "lue" },
+      { new: true }
+    );
+
+    if (!notification) {
+      // Si aucune notification avec cet ID n'est trouvée
+      return res.status(404).json({ erreur: "Notification introuvable" });
     }
+
+    console.log("Notification marquée comme lue :", notification);
+    res.status(200).json(notification); // Répondre avec la notification mise à jour
+  } catch (erreur) {
+    console.error(
+      "Erreur lors du marquage de la notification comme lue :",
+      erreur
+    );
+    res
+      .status(500)
+      .json({ erreur: "Erreur lors du marquage de la notification comme lue" });
   }
-  
+}
+
 module.exports = {
   envoyerNotification,
   marquerCommeLue,

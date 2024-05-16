@@ -1,8 +1,8 @@
 const Alergie = require("../model/Alergie");
-const Etudiant = require("../model/Etudiant");
+const User = require("../model/User");
 async function getAllEtudiantIds() {
   try {
-    const etudiants = await Etudiant.find({}, '_id'); // Récupère uniquement les ID des étudiants
+    const etudiants = await User.find({}, '_id'); // Récupère uniquement les ID des étudiants
     return etudiants.map(etudiant => etudiant._id);
   } catch (err) {
     console.error("Erreur lors de la récupération des ID des étudiants :", err);
