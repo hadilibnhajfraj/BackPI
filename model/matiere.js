@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const Matiere = new Schema({
     nom: String,
     description: String,
-    enseignant: { type: Schema.Types.ObjectId, ref: 'Enseignant' }
+    user: { type: Schema.Types.ObjectId, ref: 'User' }
 });
 
 module.exports = mongoose.model("matiere", Matiere);

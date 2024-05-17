@@ -14,4 +14,10 @@ router.get('/showById/:id', observationController.allbyId);
 
 router.get('/showByName/:name',observationController.showByone);
 
+router.get('/meal/:mealType', observationController.getByMealType);
+
+router.get('/mood/:mood', observationController.getByMood);
+
+router.get('/health/:healthStatus', observationController.getByHealthStatus);
+
 module.exports = router;

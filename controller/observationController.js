@@ -56,5 +56,36 @@ async function showByone(req, res, next) {
     }
 };
 
+async function getByMealType(req, res, next) {
+    try {
+        const { mealType } = req.params;
+        const data = await Observation.find({ repas: mealType });
+        res.status(200).json(data);
+    } catch (err) {
+        console.log(err);
+    }
+}
 
-module.exports = { add, show, updated, deleted, allbyId, showByone };
+
+async function getByMood(req, res, next) {
+    try {
+        const { mood } = req.params;
+        const data = await Observation.find({ humeur: mood });
+        res.status(200).json(data);
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+
+async function getByHealthStatus(req, res, next) {
+    try {
+        const { healthStatus } = req.params;
+        const data = await Observation.find({ sante: healthStatus });
+        res.status(200).json(data);
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+module.exports = { add, show, updated, deleted, allbyId, showByone, getByMealType, getByMood, getByHealthStatus };

@@ -7,7 +7,7 @@ const Exercice = new Schema({
     documents: [],
     typeExercice:String,
     id_cours: { type: Schema.Types.ObjectId, ref: 'Cours'},
-    id_enseignant: { type: Schema.Types.ObjectId, ref: 'Enseignant'},
+    id_user: { type: Schema.Types.ObjectId, ref: 'User'},
     id_classe: { type: Schema.Types.ObjectId, ref: 'Classes' }
   
 });

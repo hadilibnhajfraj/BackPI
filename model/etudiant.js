@@ -8,7 +8,7 @@ const Etudiant = new Schema({
     adresse: String,
     niveau: String,
     situation_familiale: String,
-    id_parent: { type: Schema.Types.ObjectId, ref: 'Parent' },
+    id_user: { type: Schema.Types.ObjectId, ref: 'User' },
 
 });
 

@@ -14,4 +14,10 @@ router.get('/showById/:id', exerciceController.allbyId);
 
 router.get('/showByName/:name',exerciceController.showByone);
 
+router.get('/findByCourse/:courseId', exerciceController.findByCourse);
+
+router.get('/findByType/:type', exerciceController.findByType);
+
+router.get('/findByDateRange', exerciceController.findByDateRange);
+
 module.exports = router;

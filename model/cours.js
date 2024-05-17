@@ -7,7 +7,7 @@ const Cours = new Schema({
     descriptionContenu: String,
     planCours: String,
     documents: [] ,
-    id_enseignant: { type: Schema.Types.ObjectId, ref: 'Enseignant'},
+    id_user: { type: Schema.Types.ObjectId, ref: 'User'},
     id_matiere: { type: Schema.Types.ObjectId, ref: 'Matiere'},
     id_classe: { type: Schema.Types.ObjectId, ref: 'Classe' },
 });

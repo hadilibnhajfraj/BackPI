@@ -9,7 +9,7 @@ const Activite = new Schema({
     duree: Number,
     lieu: String,
     objectifs: String,
-    id_enseignant: { type: Schema.Types.ObjectId, ref: 'Enseignant'} ,
+    id_User: { type: Schema.Types.ObjectId, ref: 'User'} ,
     id_classe: { type: Schema.Types.ObjectId, ref: 'Classes' }, 
 
 });
