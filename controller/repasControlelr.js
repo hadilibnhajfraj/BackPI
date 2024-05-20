@@ -1,13 +1,20 @@
 const Repas = require("../model/Repas.js");
-
+const Alergie = require("../model/Alergie");
 async function add(req, res, next) {
   try {
-    // Si aucune date n'est fournie dans la requête, utilisez la date système
     if (!req.body.jour) {
       req.body.jour = new Date();
     }
 
-    const repas = new Repas(req.body);
+    // Récupérer les identifiants des allergies sélectionnées
+    const allergies = await Alergie.find({ allergene: { $in: req.body.allergiesEleve } });
+    const allergieIds = allergies.map(allergie => allergie._id);
+
+    const repas = new Repas({
+      ...req.body,
+      allergiesEleve: allergieIds
+    });
+
     await repas.save();
 
     res.status(200).send("Repas ajouté avec succès");
@@ -16,7 +23,6 @@ async function add(req, res, next) {
     res.status(500).send("Erreur lors de l'ajout du repas");
   }
 }
-
 async function show(req, res, next) {
   try {
     const data = await Repas.find();

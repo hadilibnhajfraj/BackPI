@@ -23,16 +23,23 @@ async function getAll(req, res, next) {
     res.status(500).send("Erreur lors de l'ajout d'allergie");
   }
 }
-async function add(req, res, next){
-  try{
-      const alergie = new Alergie(req.body);
-      await alergie.save();
-      
-      res.status(200).send ("Alergie add");
-  }catch(err){
-      console.log (err);
+async function add(req, res, next) {
+  try {
+    const existingAlergie = await Alergie.findOne({ allergene: req.body.allergene });
+    if (existingAlergie) {
+      return res.status(400).send("L'allergène existe déjà");
+    }
+
+    const alergie = new Alergie(req.body);
+    await alergie.save();
+    
+    res.status(200).send("Alergie ajoutée avec succès");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Erreur lors de l'ajout de l'allergie");
   }
 }
+
 async function show(req, res, next) {
   try {
     const data = await Alergie.find();

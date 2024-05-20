@@ -13,7 +13,7 @@ const RepasSchema = new Schema({
     },
     tempsRepas: {
         type: String,
-        enum: ['petit déjeuner', 'déjeuner', 'dîner'],
+        enum: ['petit dejeuner', 'dejeuner', 'diner'],
         required: true
     },
     allergiesEleve: [{
