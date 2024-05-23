@@ -39,7 +39,10 @@ const FactureSchema = new Schema({
   frais: [{
     nom: String,
     prix: Number
-  }] // Liste des noms et prix des frais
+  }], // Liste des noms et prix des frais
+  userName: {
+    type: String
+  }
 });
 
 FactureSchema.pre('validate', async function(next) {
@@ -60,6 +63,9 @@ FactureSchema.pre('validate', async function(next) {
         this.nomOffre = offre.nom;
         this.montantApresRemise = offre.montantApresRemise;
         this.frais = offre.detailsFrais.map(frais => ({ nom: frais.nom, prix: frais.prix }));
+        
+        // Récupérer le nom de l'utilisateur depuis l'offre
+        this.userName = offre.userName;
       } else {
         return next(new Error("L'offre spécifiée n'existe pas."));
       }

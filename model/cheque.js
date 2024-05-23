@@ -6,6 +6,14 @@ const ChequeSchema = new Schema({
   proprietaire: String,
   montant: Number,
   echeance: String,
+  statut: {
+    type: String,
+    default: "en cours"
+  },
+  paiement: {
+    type: String,
+    default: "non"
+  },
   factureId: {
     type: Schema.Types.ObjectId,
     ref: 'Facture'

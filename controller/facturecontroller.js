@@ -1,4 +1,5 @@
 const Facture = require("../model/facture");
+const Cheque = require("../model/cheque");
 const PDFDocument = require('pdfkit');
 
 // Ajouter une facture
@@ -100,4 +101,40 @@ async function generatePdf(req, res, next) {
   }
 }
 
-module.exports = { addFacture, show, update, deletefacture, generatePdf };
+// Afficher les paiements par chèque pour chaque facture
+async function getChequesForFacture(req, res, next) {
+  try {
+    const facture = await Facture.findById(req.params.id);
+    if (!facture) {
+      return res.status(404).send("Facture non trouvée");
+    }
+
+    const cheques = await Cheque.find({ factureId: req.params.id });
+    if (!cheques || cheques.length === 0) {
+      return res.status(404).send("Aucun chèque trouvé pour cette facture");
+    }
+
+    const chequesInfo = cheques.map(cheque => ({
+      reference: cheque.reference,
+      montant: cheque.montant,
+      echeance: cheque.echeance
+    }));
+
+    res.json({
+      facture: {
+        reference: facture.reference,
+        montantApresRemise: facture.montantApresRemise,
+        montantCheque: facture.montantCheque,
+        montantRestant: facture.montantRestant,
+        statut: facture.statut,
+      },
+      nombreDeCheques: cheques.length,
+      cheques: chequesInfo
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Erreur lors de la récupération des informations des chèques");
+  }
+}
+
+module.exports = { addFacture, show, update, deletefacture, generatePdf, getChequesForFacture };
