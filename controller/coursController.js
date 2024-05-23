@@ -3,9 +3,7 @@ const multer = require("multer");
 const fs = require('fs'); // Importation du module fs
 const path = require('path'); // Importation du module path
 
-
-
-
+// Configurez le stockage des fichiers téléchargés
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, "uploads/"); // Dossier où les fichiers téléchargés seront enregistrés
@@ -15,7 +13,7 @@ const storage = multer.diskStorage({
     }
 });
 
-const upload = multer({ storage: storage }).array("documents", 5); // "documents" est le nom du champ de fichier dans le formulaire, et 5 est le nombre maximum de fichiers autorisés
+const upload = multer({ storage: storage }).array("documents", 5); // Gestion du téléchargement de plusieurs fichiers
 
 async function add(req, res, next) {
     try {
@@ -27,10 +25,15 @@ async function add(req, res, next) {
                 return res.status(500).json({ message: "Une erreur s'est produite lors du téléversement des fichiers." });
             }
 
-            // Créez un tableau de chemins de fichiers à partir des fichiers téléversés
+            // Vérifiez si des fichiers ont été téléchargés
+            if (!req.files || req.files.length === 0) {
+                return res.status(400).json({ message: "Aucun fichier téléchargé." });
+            }
+
+            // Récupérez les chemins des fichiers téléversés
             const documents = req.files.map(file => file.path);
 
-            // Créez et enregistrez le cours avec les documents
+            // Créez un nouveau cours avec les données du formulaire et les chemins des documents
             const cours = new Cours({
                 nom: req.body.nom,
                 horaire: req.body.horaire,
@@ -42,12 +45,15 @@ async function add(req, res, next) {
                 documents: documents
             });
 
+            // Enregistrez le cours dans la base de données
             await cours.save();
-            res.status(200).send("Cours ajouté avec succès.");
+
+            // Retournez une réponse JSON indiquant que le cours a été ajouté avec succès
+            res.status(200).json({ message: "Cours ajouté avec succès." });
         });
     } catch (err) {
         console.log(err);
-        res.status(500).send("Une erreur s'est produite lors de l'ajout du cours.");
+        res.status(500).json({ message: "Une erreur s'est produite lors de l'ajout du cours." });
     }
 }
 
@@ -75,7 +81,7 @@ async function updated(req, res, next) {
             // Vérifie d'abord si le cours existe
             const existingCours = await Cours.findById(coursId);
             if (!existingCours) {
-                return res.status(404).send("Cours non trouvé.");
+                return res.status(404).json({ message: "Cours non trouvé." });
             }
 
             // Supprime les anciens documents
@@ -103,24 +109,25 @@ async function updated(req, res, next) {
             // Enregistre les modifications
             await existingCours.save();
 
-            res.status(200).send("Cours mis à jour avec succès.");
+            res.status(200).json({
+                message: "Cours mis à jour avec succès.",
+                cours: existingCours
+            });
         });
     } catch (err) {
         console.log(err);
-        res.status(500).send("Une erreur s'est produite lors de la mise à jour du cours.");
+        res.status(500).json({ message: "Une erreur s'est produite lors de la mise à jour du cours." });
     }
 }
+
 
 async function deleted(req, res, next) {
     try {
         const deletedCours = await Cours.findByIdAndDelete(req.params.id);
 
-        // Si le cours n'est pas trouvé
         if (!deletedCours) {
-            return res.status(404).send("Cours non trouvé.");
+            return res.status(404).json({ message: "Cours non trouvé." });
         }
-
-        // Suppression des documents associés au cours
         deletedCours.documents.forEach(documentPath => {
             fs.unlink(path.join(__dirname, '..', documentPath), err => {
                 if (err) {
@@ -129,10 +136,10 @@ async function deleted(req, res, next) {
             });
         });
 
-        res.status(200).send("Cours supprimé avec succès.");
+        res.status(200).json({ message: "Cours supprimé avec succès." });
     } catch (err) {
         console.log(err);
-        res.status(500).send("Une erreur s'est produite lors de la suppression du cours.");
+        res.status(500).json({ message: "Une erreur s'est produite lors de la suppression du cours." });
     }
 }
 
@@ -185,7 +192,7 @@ async function search(req, res, next) {
         const criteria = {};
 
         if (req.query.nom) {
-            criteria.nom = { $regex: req.query.nom, $options: 'i' }; 
+            criteria.nom = { $regex: req.query.nom, $options: 'i' };
         }
         if (req.query.id_classe) {
             criteria.id_classe = req.query.id_classe;

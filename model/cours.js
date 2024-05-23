@@ -6,7 +6,7 @@ const Cours = new Schema({
     horaire: String,
     descriptionContenu: String,
     planCours: String,
-    documents: [] ,
+    documents: [{ type: String }],
     id_user: { type: Schema.Types.ObjectId, ref: 'User'},
     id_matiere: { type: Schema.Types.ObjectId, ref: 'Matiere'},
     id_classe: { type: Schema.Types.ObjectId, ref: 'Classe' },
