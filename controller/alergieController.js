@@ -27,16 +27,15 @@ async function add(req, res, next) {
   try {
     const existingAlergie = await Alergie.findOne({ allergene: req.body.allergene });
     if (existingAlergie) {
-      return res.status(400).send("L'allergène existe déjà");
+      return res.status(400).json({ message: "L'allergène existe déjà" });
     }
 
     const alergie = new Alergie(req.body);
     await alergie.save();
-    
-    res.status(200).send("Alergie ajoutée avec succès");
+    res.status(200).json({ message: "Alergie ajoutée avec succès" });
   } catch (err) {
     console.error(err);
-    res.status(500).send("Erreur lors de l'ajout de l'allergie");
+    res.status(500).json({ message: "Erreur lors de l'ajout de l'allergie" });
   }
 }
 
