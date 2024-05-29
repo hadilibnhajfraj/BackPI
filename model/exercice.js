@@ -6,9 +6,8 @@ const Exercice = new Schema({
     dateLimite: Date,
     documents: [],
     typeExercice:String,
-    id_cours: { type: Schema.Types.ObjectId, ref: 'Cours'},
+    cours: { type: String, required: true },
     id_user: { type: Schema.Types.ObjectId, ref: 'User'},
-    id_classe: { type: Schema.Types.ObjectId, ref: 'Classes' }
   
 });
 

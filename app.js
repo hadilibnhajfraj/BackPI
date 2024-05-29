@@ -36,6 +36,7 @@ app.use("/cours", coursRouter);
 app.use("/observation",observationRouter);
 app.use("/user", userRouter);
 app.use("/matiere", matiereRouter);
+app.use('/uploads', express.static('uploads'));
 
 const server = http.createServer(app);
 

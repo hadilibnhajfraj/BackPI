@@ -4,6 +4,8 @@ const Schema = mongoose.Schema;
 const Matiere = new Schema({
     nom: String,
     description: String,
+    programme: { type: String },
+    dateCreation: { type: Date, default: Date.now }, 
     user: { type: Schema.Types.ObjectId, ref: 'User' }
 });
 

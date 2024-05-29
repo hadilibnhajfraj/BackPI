@@ -1,23 +1,22 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const RepasEnum = require("../enums/repasEnum");
-const CommunicationEnum = require("../enums/communicationEnum");
-const HumeurEnum = require("../enums/humeurEnum");
-const SanteEnum = require("../enums/santeEnum");
 
-
-const Observation = new Schema({
-    description: String,
-    date: Date,
-    heure: Number,
-    repas: { type: Number, enum: Object.values(RepasEnum) },
-    humeur: { type: Number, enum: Object.values(HumeurEnum) },
-    sante: { type: Number, enum: Object.values(SanteEnum) },
-    communication: { type: Number, enum: Object.values(CommunicationEnum) },
-    id_etudiant: { type: Schema.Types.ObjectId, ref: 'Etudiant'},
-    id_user: { type: Schema.Types.ObjectId, ref: 'User' },
-
-
+const observationSchema = new Schema({
+    description: { type: String, required: true },
+    date: { type: Date, required: true },
+    heure: { type: String, required: true },
+    repas: { type: String, enum: ['Petit-déjeuner', 'Déjeuner', 'Dîner'], required: true },
+    etudiant: {
+        _id: mongoose.Schema.Types.ObjectId,
+        nom: { type: String, required: true },
+        prenom: { type: String, required: true } // Corrected typo here
+    },
+    humeur: { type: String, enum: ['happy', 'sad', 'neutral'], required: true },
+    sante: { type: String, enum: ['good', 'bad', 'average'], required: true },
+    communication: { type: String, enum: ['excellent', 'poor', 'average'], required: true },
+    id_user: { type: mongoose.Schema.Types.ObjectId, required: true }
 });
 
-module.exports = mongoose.model("observation", Observation);
+const Observation = mongoose.model('Observation', observationSchema);
+
+module.exports = Observation;

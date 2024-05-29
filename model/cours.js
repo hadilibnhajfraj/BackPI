@@ -1,15 +1,17 @@
-const mongoose = require("mongoose");
-const Schema = mongoose.Schema;
+// models/cours.js
+const mongoose = require('mongoose');
 
-const Cours = new Schema({
-    nom: String,
-    horaire: String,
-    descriptionContenu: String,
-    planCours: String,
-    documents: [{ type: String }],
-    id_user: { type: Schema.Types.ObjectId, ref: 'User'},
-    id_matiere: { type: Schema.Types.ObjectId, ref: 'Matiere'},
-    id_classe: { type: Schema.Types.ObjectId, ref: 'Classe' },
+const CoursSchema = new mongoose.Schema({
+    nom: { type: String, required: true },
+    horaire: { type: String, required: true },
+    descriptionContenu: { type: String, required: true },
+    planCours: { type: String, required: true },
+    id_user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    classe: { type: String, required: true },
+    matiere: { type: String, required: true },
+    documents: { type: [String], required: true }
 });
 
-module.exports = mongoose.model("cours", Cours);
+const Cours = mongoose.model('Cours', CoursSchema);
+
+module.exports = Cours;

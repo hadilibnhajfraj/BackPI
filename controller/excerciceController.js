@@ -32,18 +32,17 @@ async function add(req, res, next) {
                 description: req.body.description,
                 dateLimite: req.body.dateLimite,
                 typeExercice: req.body.typeExercice,
-                id_cours: req.body.id_cours,
+                cours: req.body.cours,
                 id_user: req.body.id_user,
-                id_classe: req.body.id_classe,
                 documents: documents
             });
 
             await exercice.save();
-            res.status(200).send("Exercice ajouté avec succès.");
+            res.status(200).json("Exercice ajouté avec succès.");
         });
     } catch (err) {
         console.log(err);
-        res.status(500).send("Une erreur s'est produite lors de l'ajout de l'exercice.");
+        res.status(500).json("Une erreur s'est produite lors de l'ajout de l'exercice.");
     }
 }
 
@@ -90,19 +89,18 @@ async function updated(req, res, next) {
             existingExercice.description = req.body.description;
             existingExercice.dateLimite = req.body.dateLimite;
             existingExercice.typeExercice = req.body.typeExercice;
-            existingExercice.id_cours = req.body.id_cours;
+            existingExercice.cours = req.body.cours;
             existingExercice.id_user = req.body.id_user;
-            existingExercice.id_classe = req.body.id_classe;
             existingExercice.documents = documents;
 
             // Enregistre les modifications
             await existingExercice.save();
 
-            res.status(200).send("Exercice mis à jour avec succès.");
+            res.status(200).json("Exercice mis à jour avec succès.");
         });
     } catch (err) {
         console.log(err);
-        res.status(500).send("Une erreur s'est produite lors de la mise à jour de l'exercice.");
+        res.status(500).json("Une erreur s'est produite lors de la mise à jour de l'exercice.");
     }
 }
 
@@ -124,10 +122,10 @@ async function deleted(req, res, next) {
             });
         });
 
-        res.status(200).send("Exercice supprimé avec succès.");
+        res.status(200).json("Exercice supprimé avec succès.");
     } catch (err) {
         console.log(err);
-        res.status(500).send("Une erreur s'est produite lors de la suppression de l'exercice.");
+        res.status(500).json("Une erreur s'est produite lors de la suppression de l'exercice.");
     }
 }
 

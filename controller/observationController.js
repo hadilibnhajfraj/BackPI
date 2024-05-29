@@ -1,12 +1,13 @@
 const Observation = require ("../model/observation");
 
-async function add(req, res, next){
-    try{
+async function add(req, res, next) {
+    try {
         const observation = new Observation(req.body);
         await observation.save();
-        res.status(200).send ("Observation add");
-    }catch(err){
-        console.log (err);
+        res.status(200).json("Observation added");
+    } catch (err) {
+        console.log(err);
+        res.status(500).send("Error adding observation");
     }
 }
 
@@ -22,7 +23,7 @@ async function show(req, res, next) {
 async function updated(req, res, next) {
     try {
         await Observation.findByIdAndUpdate(req.params.id, req.body);
-        res.status(200).send("Observation updated")
+        res.status(200).json("Observation updated")
     } catch (err) {
         console.log(err)
     }
@@ -31,7 +32,7 @@ async function updated(req, res, next) {
 async function deleted(req, res, next) {
     try {
         await Observation.findByIdAndDelete(req.params.id);
-        res.status(200).send("Observation deleted")
+        res.status(200).json("Observation deleted")
     } catch (err) {
         console.log(err)
     }
