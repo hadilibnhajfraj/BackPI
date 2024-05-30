@@ -6,6 +6,8 @@ router.post("/add", repasController.add);
 router.get("/getRepas", repasController.show);
 router.get("/getAllRepas", repasController.getAllRepas);
 router.put("/updatetRepas/:id", repasController.update);
+router.put("/updatetRepasallergie/:id/allergies", repasController.updateAllergieRepas);
 router.get('/repas/:id', repasController.getRepas);
+router.get('/repasallergie/:id', repasController.getRepasAllergie);
 router.delete("/deleteRepas/:id", repasController.deleteRepas);
 module.exports = router;
