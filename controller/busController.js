@@ -56,7 +56,7 @@ async function update(req, res, next) {
   try {
     const bus = await Bus.findById(req.params.id);
     if (!bus) {
-      return res.status(404).send("Bus not found");
+      return res.status(404).json("Bus not found");
     }
 
     const oldChauffeurId = bus.chauffeur;
@@ -80,10 +80,10 @@ async function update(req, res, next) {
       }
     }
 
-    res.send("Bus updated");
+    res.json("Bus updated");
   } catch (err) {
     console.log(err);
-    res.status(500).send("Error updating bus");
+    res.status(500).json("Error updating bus");
   }
 }
 
@@ -104,6 +104,20 @@ async function deleteBus(req, res, next) {
   } catch (err) {
     console.log(err);
     res.status(500).json("Error removing bus");
+  }
+}
+async function getBus(req, res, next) {
+  try {
+    const bus = await Bus.findById(req.params.id).populate(
+      "chauffeur"
+    );
+    if (!bus) {
+      return res.status(404).send("chauffeur not found");
+    }
+    res.json(bus);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Error fetching chauffeur");
   }
 }
 async function addChauffeur(req, res, next) {
@@ -145,6 +159,18 @@ async function showChauffeur(req, res, next) {
     res.status(500).send("Error fetching buses");
   }
 }
+async function getChauffeurId(req, res, next) {
+  try {
+    const bus = await Chauffeur.findById(req.params.id)
+    if (!bus) {
+      return res.status(404).send("chauffeur not found");
+    }
+    res.json(bus);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Error fetching chauffeur");
+  }
+}
 module.exports = {
   add,
   update,
@@ -154,4 +180,6 @@ module.exports = {
   updateChauffeur,
   deleteChauffeur,
   showChauffeur,
+  getBus,
+  getChauffeurId
 };
