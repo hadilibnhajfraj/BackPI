@@ -3,7 +3,7 @@ const router = express.Router();
 const chequecontroller = require("../controller/chequecontroller");
 
 // Route pour ajouter un chèque
-router.post("/addcheque", chequecontroller.addCheque);
+router.post("/:factureId/addcheque", chequecontroller.addCheque);
 
 // Route pour afficher tous les chèques
 router.get("/show", chequecontroller.show);
@@ -16,5 +16,7 @@ router.delete("/delete/:id", chequecontroller.deletecheque);
 
 // Route pour vérifier les échéances des chèques
 router.get("/checkecheance", chequecontroller.checkChequeEcheance);
+
+router.get("/show/nonpaid", chequecontroller.showNonPaidCheques);
 
 module.exports = router;

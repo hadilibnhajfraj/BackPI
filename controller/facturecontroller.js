@@ -38,7 +38,7 @@ async function update(req, res, next) {
 async function deletefacture(req, res, next) {
   try {
     await Facture.findByIdAndDelete(req.params.id);
-    res.send("deleted");
+    res.json("deleted");
   } catch (err) {
     console.log(err);
   }
@@ -73,8 +73,8 @@ async function generatePdf(req, res, next) {
     doc.fontSize(25).text('Facture', { align: 'center' });
     doc.fontSize(18).text(`Référence: ${facture.reference}`);
     doc.fontSize(18).text(`Date: ${facture.date.toLocaleDateString()}`);
-    doc.fontSize(18).text(`Client: ${facture.client}`);
-    doc.fontSize(18).text(`Offre: ${facture.nomOffre}`);
+    doc.fontSize(18).text(`Client: ${facture.userName}`);
+   //doc.fontSize(18).text(`Offre: ${facture.nomOffre}`);
     doc.fontSize(18).text(`Montant après remise: ${facture.montantApresRemise.toFixed(3)} TND`);
     doc.fontSize(18).text(`Statut: ${facture.statut}`);
 
@@ -137,4 +137,43 @@ async function getChequesForFacture(req, res, next) {
   }
 }
 
-module.exports = { addFacture, show, update, deletefacture, generatePdf, getChequesForFacture };
+async function searchFactures(req, res, next) {
+  try {
+    const { query } = req;
+    const searchCriteria = {};
+
+    if (query.reference) {
+      searchCriteria.reference = { $regex: query.reference, $options: 'i' };
+    }
+    if (query.client) {
+      searchCriteria.client = { $regex: query.client, $options: 'i' };
+    }
+    if (query.date) {
+      searchCriteria.date = new Date(query.date);
+    }
+    if (query.statut) {
+      searchCriteria.statut = query.statut;
+    }
+
+    const factures = await Facture.find(searchCriteria);
+    res.json(factures);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Erreur lors de la recherche des factures");
+  }
+}
+
+async function searchFacturesByStatut(req, res, next) {
+  try {
+    const { statut } = req.query;
+    const factures = await Facture.find({ statut });
+    res.json(factures);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Erreur lors de la recherche des factures par statut");
+  }
+}
+
+
+
+module.exports = { addFacture, show, update, deletefacture, generatePdf, getChequesForFacture, searchFactures, searchFacturesByStatut  };

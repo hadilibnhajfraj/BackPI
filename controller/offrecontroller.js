@@ -1,33 +1,37 @@
 const Offre = require('../model/offre');
 const Frais = require('../model/frais');
+const mongoose = require('mongoose');
 
 async function add(req, res, next) {
   try {
     const offreData = req.body;
     const fraisIds = offreData.frais;
 
-    // Vérifier si les frais existent
+    // Verify if the fees exist
     const fraisExistants = await Frais.find({ _id: { $in: fraisIds } });
     if (fraisExistants.length !== fraisIds.length) {
       return res.status(400).send("Certains frais sélectionnés n'existent pas.");
     }
 
-    // Calculer le montant total des frais sélectionnés
+    // Calculate the total amount of selected fees
     let montantTotal = fraisExistants.reduce((total, frais) => total + frais.prix, 0);
 
-    // Ajouter les montants calculés à l'offre
+    // Add the calculated amounts to the offer
     offreData.montant = montantTotal;
     offreData.montantApresRemise = montantTotal * (1 - offreData.remise / 100);
 
-    // Créer et sauvegarder l'offre
+    // Create and save the offer
     const offre = new Offre(offreData);
-    await offre.save();
-    res.send("Offre ajoutée avec succès");
+    const savedOffre = await offre.save();
+
+    // Return the saved offer including the _id
+    res.json(savedOffre); 
   } catch (err) {
     console.log(err);
-    res.status(500).send("Erreur lors de l'ajout de l'offre");
+    res.status(500).json("Erreur lors de l'ajout de l'offre");
   }
 }
+
 
 async function show(req, res, next) {
   try {
@@ -74,4 +78,38 @@ async function deleteoffre(req, res, next) {
   }
 }
 
-module.exports = { add, show, update, deleteoffre };
+async function showById(req, res, next) {
+  try {
+    const offreId = req.params.id;
+    if (!mongoose.Types.ObjectId.isValid(offreId)) {
+      return res.status(400).send("Invalid Offre ID format");
+    }
+    const data = await Offre.findById(offreId).populate('frais');
+    if (!data) {
+      return res.status(404).send("Offre non trouvée");
+    }
+    res.json(data);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Erreur lors de la récupération des détails de l'offre");
+  }
+}
+async function getLatestOffreId(req, res, next) {
+  try {
+    // Recherchez la dernière offre ajoutée dans la base de données
+    const latestOffre = await Offre.findOne().sort({ _id: -1 }).limit(1);
+
+    if (!latestOffre) {
+      return res.status(404).send("Aucune offre trouvée");
+    }
+
+    // Renvoyer l'ID de la dernière offre ajoutée
+    res.json(latestOffre._id);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Erreur lors de la récupération de l'ID de la dernière offre ajoutée");
+  }
+}
+
+
+module.exports = { add, show, update, deleteoffre, showById, getLatestOffreId};

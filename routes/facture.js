@@ -9,6 +9,10 @@ router.get("/show", facturecontroller.show);
 router.put("/update/:id", facturecontroller.update);
 router.delete("/delete/:id", facturecontroller.deletefacture);
 router.get('/generatePdf/:id', facturecontroller.generatePdf);
+router.get('/search', facturecontroller.searchFactures);
+router.get('/searchStatut', facturecontroller.searchFacturesByStatut);
+
+
 
 // Nouvelle route pour récupérer les informations des paiements par chèque pour chaque facture
 router.get('/:id/cheques', facturecontroller.getChequesForFacture);

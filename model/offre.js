@@ -37,10 +37,6 @@ const OffreSchema = new Schema({
 
 OffreSchema.pre('validate', async function(next) {
   try {
-    if (!this.frais || this.frais.length < 2) {
-      throw new Error("Au moins deux frais doivent être sélectionnés.");
-    }
-
     // Récupérer les détails complets des frais
     const Frais = mongoose.model('Frais');
     const fraisDetails = await Frais.find({ _id: { $in: this.frais } });
