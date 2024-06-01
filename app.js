@@ -1,8 +1,10 @@
 const http = require("http");
 const express = require("express");
 const mongoose = require("mongoose");
+const dotenv = require('dotenv');
 const mongoConnection = require("../BackPI/config/dbconnection.json");
 const path = require("path");
+dotenv.config();
 var app = express(); // Move this line up
 // les deux lignes hethom homa ali ya9raw fichier .twig ay haja feha html
 app.set("views", path.join(__dirname, "views"));
@@ -17,6 +19,10 @@ mongoose
   .catch((err) => console.error("Mongo connection error:", err));
 var messageRouter = require("../BackPI/routes/messageroute");
 var userRoute = require("../BackPI/routes/userroute");
+var etudiantRoute = require("../BackPI/routes/etudiantRoute");
+var reclamationRoute = require("../BackPI/routes/reclamationRoute");
+var responceRoute = require("../BackPI/routes/responceRoute");
+
 
 
 const bodyParser = require("body-parser");
@@ -26,6 +32,10 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use("/message", messageRouter);
 app.use("/user", userRoute);
+app.use("/etudiant", etudiantRoute);
+app.use("/reclamation", reclamationRoute);
+app.use("/responce", responceRoute);
+
 
 const server = http.createServer(app);
 server.listen(3000, () => {
