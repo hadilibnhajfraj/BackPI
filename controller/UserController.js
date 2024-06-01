@@ -29,7 +29,7 @@ async function update(req, res, next) {
   }
 }
 
-async function deleted(req, res, next) {
+async function deleteuser(req, res, next) {
   try {
     await User.findByIdAndDelete(req.params.id);
     res.send("remouved");
@@ -38,4 +38,4 @@ async function deleted(req, res, next) {
   }
 }
 
-module.exports = { add, show, update, deleted };
+module.exports = { add, show, update, deleteuser };

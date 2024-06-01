@@ -5,7 +5,7 @@ async function add(req, res, next) {
     console.log("body :" + JSON.stringify(req.body));
     const etudiant = new Etudiant(req.body);
     await etudiant.save();
-    res.send("Etudiant add");
+    res.send("etudiant add");
   } catch (err) {
     console.log(err);
   }

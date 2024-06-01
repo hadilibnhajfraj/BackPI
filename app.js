@@ -13,11 +13,12 @@ mongo
     .catch((err) => console.log(err));
 
 const classRoute = require("./routes/classeRoute");
-const coursRoute = require("./routes/coursRoute");
+const coursRoute = require("./routes/coursRoutes");
 const emploieRoute = require("./routes/emploieRoute");
 const etudiantRoute = require("./routes/etudiantRoute");
 const matiereRoute = require("./routes/matiereRoute");
 const salleRoute = require("./routes/salleRoute");
+const seanceRoute = require("./routes/seanceRoute");
 const userRoute = require("./routes/userRoute");
 
 var app = express();
@@ -32,6 +33,7 @@ app.use("/etudiant", etudiantRoute);
 app.use("/emploie", emploieRoute);
 app.use("/cours", coursRoute);
 app.use("/classe", classRoute);
+app.use("/seance", seanceRoute);
 
 const server = http.createServer(app);
 
