@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
-
+const bcrypt = require('bcryptjs');
 const userSchema = new Schema({
     login: { type: String, required: true, unique: true, lowercase: true, trim: true },
     password: { type: String, required: true },
@@ -21,8 +21,22 @@ const userSchema = new Schema({
     authorities: [{ type: String, enum: ['admin', 'enseignant', 'parent'] }],
     createdBy: String,
     lastModifiedBy: String,
-    util: String,
+    util: String,   
     dateOp: { type: Date }
 }, { timestamps: true });
+userSchema.methods.comparePassword = function (candidatePassword) {
+    const user = this;
+    return new Promise((resolve, reject) => {
+      bcrypt.compare(candidatePassword, user.password, (err, isMatch) => {
+        if (err) {
+          return reject(err);
+        }
+        if (!isMatch) {
+          return reject(new Error("Invalid password"));
+        }
+        resolve(true);
+      });
+    });
+  };
 
 module.exports = mongoose.model("User", userSchema);
