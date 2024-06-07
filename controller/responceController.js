@@ -82,7 +82,7 @@ async function add(req, res, next) {
 
 async function show(req, res, next) {
     try {
-        const data = await Responce.find();
+        const data = await Response.find();
         res.json(data);
     } catch (err) {
         console.log(err);
@@ -90,13 +90,13 @@ async function show(req, res, next) {
 }
 async function update(req, res, next) {
     try {
-        const data = await Responce.findByIdAndUpdate(req.params.id, req.body);
+        const data = await Response.findByIdAndUpdate(req.params.id, req.body);
         res.send("updated");
     } catch (err) {  console.log(err); }
 }
 async function deleteResponce(req, res, next) {
     try {
-        const data = await Responce.findByIdAndDelete(req.params.id, req.body);
+        const data = await Response.findByIdAndDelete(req.params.id);
         res.send("removed");
     }
     catch (err) { console.log(err); }
