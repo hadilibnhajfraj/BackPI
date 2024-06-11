@@ -7,10 +7,17 @@ router.put("/update/:id", emploiecontroller.updated);
 router.delete("/delete/:id", emploiecontroller.deleted);
 router.post('/:emploiId/classes/:classId/seances', emploiecontroller.addSeance);
 router.put('/:id/extend/:additionalWeeks', emploiecontroller.extendEmploie);
-router.put('/:id', emploiecontroller.showById);
-router.put('/classe/:id', emploiecontroller.showByClassId);
+router.get('/emp/:id', emploiecontroller.showById);
+router.get('/classe/:id', emploiecontroller.showByClassId);
 router.get('/generate-timetable/:id', emploiecontroller.generateTimetablePDF);
 router.get('/generate-timetable/:id/:ide', emploiecontroller.generateTimetableForTeacherPDF);
-router.get('/save/:id', emploiecontroller.saveTimetable);
+router.get('/emailetudiant/:id', emploiecontroller.getEmailsOfClassStudents);
+router.get('/emailparent/:id', emploiecontroller.getEmailsOfParentsOfClassStudents);
+router.get('/idenseignant/:id', emploiecontroller.getTeacherIdsByEmploiId);
+router.get('/emailenseignant/:id', emploiecontroller.getEmailsOfTeachersByEmploiId);
+router.post('/save/:id', emploiecontroller.generateAndSendGlobalTimetable);
+
+
+
 
 module.exports = router;

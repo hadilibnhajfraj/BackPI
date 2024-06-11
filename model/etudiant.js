@@ -9,8 +9,8 @@ const Etudiant = new Schema({
     niveau: String,
     situation_familiale: String,
     id_user: { type: Schema.Types.ObjectId, ref: 'User' },
-    email:String
-
+    email:{ type: String , required: true },
+    class: { type: Schema.Types.ObjectId, ref: 'Classe' , required: true },
 });
 
 module.exports = mongoose.model("etudiant", Etudiant);

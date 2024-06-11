@@ -12,6 +12,7 @@ const nodemailer = require('nodemailer');
 const Etudiant = require('../model/etudiant');
 
 
+
 // Function to calculate the next Monday and the following Saturday for the given week offset
 const getNextMonday = () => {
     const now = new Date();
@@ -367,8 +368,7 @@ async function showByClassId(req, res, next) {
 }
 
 
-const generateTimetablePDF = async (req, res) => {
-    const emploiId = req.params.id;
+const generateTimetablePDF = async (emploiId) => {
 
     try {
         const emploi = await Emploi.findById(emploiId)
@@ -518,10 +518,7 @@ const generateTimetablePDF = async (req, res) => {
     }
 };
 
-const generateTimetableForTeacherPDF = async (req, res) => {
-    const emploiId = req.params.id;
-    const enseignantId = req.params.ide;
-
+const generateTimetableForTeacherPDF = async (emploiId, enseignantId) => {
     try {
         // Trouver l'emploi du temps
         const emploi = await Emploi.findById(emploiId)
@@ -688,134 +685,217 @@ const generateTimetableForTeacherPDF = async (req, res) => {
 };
 
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    service: "gmail",
     auth: {
-        user: 't0429597@gmail.com',
-        pass: 'frrz sozl ivqu fudj',
+      user: "t0429597@gmail.com",
+      pass: "frrz sozl ivqu fudj",
     },
-    secure: true,
-    port: 587,
-});
-
-const sendEmail = (to, subject, text) => {
+    secure: true, // Utilisez le port sécurisé
+    port: 587, // Port sécurisé pour Gmail
+  });
+  
+  const sendEmail = (to, subject, text, filePath) => {
     const mailOptions = {
         from: 't0429597@gmail.com',
         to,
         subject,
         text,
+        attachments: [
+            {
+                filename: path.basename(filePath), // Le nom du fichier tel qu'il apparaîtra dans l'email
+                path: filePath // Le chemin du fichier à joindre
+            }
+        ]
     };
 
     return transporter.sendMail(mailOptions);
 };
 
-const saveTimetable = async (req, res) => {
-    const emploiId = req.params.id;
 
+async function getEmailsOfClassStudents(emploiId) {
     try {
-        const emploi = await Emploi.findById(emploiId)
-            .populate({
-                path: 'class',
-                model: Classe,
-                select: 'name',
-                populate: [
-                    {
-                        path: 'students',
-                        model: 'etudiant',
-                        select: 'email id_user',
-                    },
-                    {
-                        path: 'teachers',
-                        model: 'User',
-                        select: 'email firstName lastName',
-                    },
-                ],
-            });
-
+        // Trouver la classe associée à l'emploi
+        const emploi = await Emploi.findById(emploiId);
         if (!emploi) {
-            console.log('No emploi found with this ID');
-            return res.status(404).send('No emploi found with this ID');
+            throw new Error('L\'emploi spécifié n\'existe pas.');
         }
 
-        // Generate general timetable PDF
-        const generalFileName = `emploi_${emploiId}_${Date.now()}.pdf`;
-        const generalFilePath = await generateTimetablePDF(req, res);
-
-        // Send emails
-
-        // Send general timetable to students and parents
-        const studentEmails = emploi.class.students.filter(student => student) // Filter out undefined students
-            .map(student => student.email);
-
-        if (emploi.class.students && emploi.class.students.length > 0) { // Check for students before populating
-            const parentEmails = await Etudiant.find({ _id: { $in: emploi.class.students }, id_user: { $exists: true } })
-                .populate('id_user', 'email')
-                .then(students => students.map(student => student.id_user ? student.id_user.email : undefined));
-
-            const generalMailOptions = {
-                from: 't0429597@gmail.com',
-                to: [...studentEmails, ...parentEmails.filter(email => email)], // Filter out undefined emails
-                subject: 'Emploi du temps général',
-                text: 'Veuillez trouver ci-joint l\'emploi du temps général de votre classe.',
-                attachments: [
-                    {
-                        filename: generalFileName,
-                        path: generalFilePath,
-                    },
-                ],
-            };
-
-            await transporter.sendMail(generalMailOptions);
+        // Récupérer les étudiants de la classe associée à l'emploi
+        const classe = await Classe.findById(emploi.class);
+        if (!classe) {
+            throw new Error('La classe associée à cet emploi n\'existe pas.');
         }
 
-        // Generate timetables for each teacher
-        const teachers = emploi.seances.map(seance => seance.enseignant);
-        console.log('okziziz' + teachers);
-        const teacherFilePromises = [];
+        // Récupérer les informations des étudiants
+        const students = await Etudiant.find({ _id: { $in: classe.students } });
 
-        for (const teacher of teachers) {
-            req.params.ide = teacher._id;
-            const teacherFilePath = await generateTimetableForTeacherPDF(req, res);
-            teacherFilePromises.push(teacherFilePath);
-        }
+        // Extraire les emails des étudiants
+        const emails = students.map(student => student.email);
 
-        // Wait for all teacher file promises to resolve
-        const teacherFilePaths = await Promise.all(teacherFilePromises);
-
-        // Send specific timetable to each teacher
-        for (let i = 0; i < teachers.length; i++) {
-            const teacher = teachers[i];
-            const teacherFileName = `emploi_${emploiId}_enseignant_${teacher._id}_${Date.now()}.pdf`;
-            const teacherFilePath = teacherFilePaths[i];
-
-            const teacherMailOptions = {
-                from: 't0429597@gmail.com',
-                to: teacher.email,
-                subject: 'Votre emploi du temps',
-                text: 'Veuillez trouver ci-joint votre emploi du temps.',
-                attachments: [
-                    {
-                        filename: teacherFileName,
-                        path: teacherFilePath,
-                    },
-                ],
-            };
-
-            await transporter.sendMail(teacherMailOptions);
-        }
-
-        res.status(200).send('Emplois du temps générés et envoyés par email avec succès')
-    }
-    catch (err) {
-        console.error('Error saving timetable:', err);
-        if (!res.headersSent) {
-            res.status(500).send('Error saving timetable');
-        }
+        return emails;
+    } catch (error) {
+        console.error('Une erreur est survenue :', error.message);
+        res.status(500).json({ error: 'An error occurred while fetching the data.' }); // ou une autre indication d'erreur que vous préférez
     }
 }
 
 
+async function getEmailsOfParentsOfClassStudents(emploiId) {
+    try {
+        // Trouver l'emploi associé à l'ID donné
+        const emploi = await Emploi.findById(emploiId);
+        if (!emploi) {
+            throw new Error('L\'emploi spécifié n\'existe pas.');
+        }
+
+        // Trouver la classe associée à cet emploi
+        const classe = await Classe.findById(emploi.class);
+        if (!classe) {
+            throw new Error('La classe associée à cet emploi n\'existe pas.');
+        }
+
+        // Récupérer les IDs des étudiants de la classe
+        const studentIds = classe.students;
+
+        // Récupérer les informations des étudiants en utilisant les IDs
+        const students = await Etudiant.find({ _id: { $in: studentIds } });
+        if (!students.length) {
+            throw new Error('Aucun étudiant trouvé dans cette classe.');
+        }
+
+        // Récupérer les IDs des parents de chaque étudiant
+        const parentIds = students.map(student => student.id_user);
+
+        // Récupérer les emails des parents en utilisant les IDs
+        const parentsEmails = await User.find({ _id: { $in: parentIds } }, { email: 1, _id: 0 });
+
+        return parentsEmails;
+    } catch (error) {
+        console.error('Une erreur est survenue :', error.message);
+        res.status(500).json({ error: 'An error occurred while fetching the data.' }); // ou une autre indication d'erreur que vous préférez
+        return null; // ou une autre indication d'erreur que vous préférez
+    }
+}
+
+//async function getTeacherIdsByEmploiId(req, res) {
+async function getTeacherIdsByEmploiId(id) {
+    try {
+        // Trouver l'emploi associé à l'ID donné
+        //const emploi = await Emploi.findById(req.params.id);
+        const emploi = await Emploi.findById(id);
+        if (!emploi) {
+            throw new Error('L\'emploi spécifié n\'existe pas.');
+        }
+
+        // Récupérer les séances de l'emploi
+        const seances = await Seance.find({ emploie: id });
+        if (!seances.length) {
+            throw new Error('Aucune séance trouvée pour cet emploi.');
+        }
+
+        // Utiliser un ensemble pour stocker les IDs des enseignants uniques
+        const teacherIdsSet = new Set();
+        // Parcourir les séances et ajouter les IDs des enseignants à l'ensemble
+        seances.forEach(seance => {
+            // Vérifier si l'ensemble ne contient pas déjà l'ID de l'enseignant
+            if (!teacherIdsSet.has(seance.enseignant.toString())) {
+                teacherIdsSet.add(seance.enseignant.toString());
+            }
+        });
+
+        // Convertir l'ensemble en tableau avant de le retourner
+        const teacherIds = Array.from(teacherIdsSet);
+
+        return teacherIds;
+    } catch (error) {
+        throw new Error('Une erreur est survenue lors de la récupération des IDs des enseignants : ' + error.message);
+    }
+}
+
+
+async function getEmailsOfTeachersByEmploiId(id) {
+    try {
+        // Récupérer les IDs des enseignants pour cet emploi
+        const teacherIds = await getTeacherIdsByEmploiId(id);
+
+        // Récupérer les informations des enseignants en utilisant les IDs
+        const teachers = await User.find({ _id: { $in: teacherIds } });
+        if (!teachers.length) {
+            throw new Error('Aucun enseignant trouvé pour cet emploi.');
+        }
+
+        // Extraire les adresses email des enseignants
+        const emails = teachers.map(teacher => teacher.email);
+
+        return emails;
+    } catch (error) {
+        console.error('Une erreur est survenue :', error.message);
+        res.status(500).json({ error: 'An error occurred while fetching the data.' }); // ou une autre indication d'erreur que vous préférez
+        throw error;
+    }
+}
+
+const generateAndSendGlobalTimetable = async (req, res) => {
+    try {
+        const emploiId = req.params.id;
+
+        // Générer l'emploi du temps global et enregistrer le PDF
+        const globalTimetablePath = await generateTimetablePDF(emploiId);
+
+        // Récupérer les emails des parents des étudiants de la classe
+        const parentEmails = await getEmailsOfParentsOfClassStudents(emploiId);
+
+        // Envoyer l'emploi du temps global par email aux parents
+        await Promise.all(parentEmails.map(email => sendEmail(email, 'Emploi du Temps Global', 'Voici l\'emploi du temps de votre enfant.', globalTimetablePath)));
+
+        // Récupérer les emails des étudiants de la classe
+        const studentEmails = await getEmailsOfClassStudents(emploiId);
+
+        // Envoyer l'emploi du temps global par email aux étudiants
+        await Promise.all(studentEmails.map(email => sendEmail(email, 'Emploi du Temps Global', 'Voici votre emploi du temps.', globalTimetablePath)));
+
+        // Récupérer les IDs des enseignants
+        const teacherIds = await getTeacherIdsByEmploiId(emploiId);
+
+        // Générer et envoyer les emplois du temps des enseignants
+        for (const teacherId of teacherIds) {
+            const teacherPDFPath = await generateTimetableForTeacherPDF(emploiId, teacherId);
+            const teacher = await User.findById(teacherId).select('email');
+            if (teacher && teacher.email) {
+                await sendEmail(teacher.email, 'Emploi du Temps', 'Voici votre emploi du temps.', teacherPDFPath);
+            }
+        }
+
+        res.status(200).send('Emploi du temps généré et envoyé avec succès.');
+    } catch (error) {
+        console.error('Error generating and sending timetables:', error);
+        if (!res.headersSent) {
+            res.status(500).send('Error generating and sending timetables.');
+        }
+    }
+};
 
 
 
 
-module.exports = { add, show, updated, deleted, addSeance, extendEmploie, showById, showByClassId, generateTimetablePDF, generateTimetableForTeacherPDF, saveTimetable };
+
+
+
+
+module.exports = {
+    add,
+    show,
+    updated,
+    deleted,
+    addSeance,
+    extendEmploie,
+    showById,
+    showByClassId,
+    generateTimetablePDF,
+    generateTimetableForTeacherPDF,
+    getEmailsOfClassStudents,
+    getEmailsOfParentsOfClassStudents,
+    getTeacherIdsByEmploiId,
+    getEmailsOfTeachersByEmploiId,
+    generateAndSendGlobalTimetable
+};

@@ -4,6 +4,7 @@ const User = require('../model/user');
 const nodemailer = require('nodemailer');
 const Classe = require("../model/class");
 const Etudiant = require('../model/etudiant'); 
+const Emploi = require('../model/emploi')
 
 async function add(req, res, next) {
   try {
@@ -146,7 +147,11 @@ async function cancelSeance (req, res) {
     if (!seance) {
       return res.status(404).json({ message: 'Seance not found' });
     }
-
+    // Trouver l'emploi du temps lié à cette séance
+    const emploi = await Emploi.findById(seance.emploie);
+    if (!emploi) {
+      return res.status(404).json({ message: 'Emploi not found' });
+    }
       // Mettre à jour l'emploi pour supprimer la référence à la séance
       emploi.seances = emploi.seances.filter(id => id.toString() !== seanceId);
       await emploi.save();
