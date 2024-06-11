@@ -1,9 +1,44 @@
 // Importer le module nodemailer pour l'envoi d'e-mails
 const nodemailer = require("nodemailer");
-
+const axios = require('axios');
 // Importer le modèle de Notification
 const Notification = require("../model/Notification"); // Assurez-vous d'ajuster le chemin selon votre structure de dossiers
+async function getWeather() {
+  const apiKey = '465e5eedb508a1b6073d12f51f59adb4'; // Replace with your OpenWeatherMap API key
+  const url = `https://api.openweathermap.org/data/2.5/weather?q=tunis&appid=465e5eedb508a1b6073d12f51f59adb4&units=metric`;
 
+  try {
+    const response = await axios.get(url);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching weather data:', error);
+    throw error;
+  }
+}
+async function envoyerWeatherUpdate(req, res) {
+  try {
+    const weatherData = await getWeather();
+
+    const weatherMessage = `Weather Update for Tunis:
+    Temperature: ${weatherData.main.temp}°C
+    Weather: ${weatherData.weather[0].description}`;
+
+    const options = {
+      from: 't0429597@gmail.com',
+      to: 'hadil.ibnhajfraj@gmail.com', // Replace with the administrator's email
+      subject: 'Real-time Weather Update',
+      text: weatherMessage,
+    };
+
+    await transporter.sendMail(options);
+
+    console.log('Weather update sent successfully.');
+    res.status(200).json({ message: 'Weather update sent successfully' });
+  } catch (error) {
+    console.error('Error sending weather update:', error);
+    res.status(500).json({ error: 'Error sending weather update' });
+  }
+}
 // Créer un transporteur SMTP pour l'envoi d'e-mails
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -86,4 +121,6 @@ async function marquerCommeLue(req, res) {
 module.exports = {
   envoyerNotification,
   marquerCommeLue,
+  getWeather,
+  envoyerWeatherUpdate
 };

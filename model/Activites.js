@@ -6,7 +6,6 @@ const Activites = new Schema({
   localisation: {
     type: String,
     enum: ["interieur", "exterieur"],
-    
   },
   date_act: Date,
   description: String,
@@ -18,6 +17,7 @@ const Activites = new Schema({
       contentType: String, // Type de contenu de l'image
     },
   ],
+  temperature: String, // Add this line for temperature
 });
 
 module.exports = mongoose.model("Activites", Activites);
