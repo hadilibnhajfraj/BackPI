@@ -5,7 +5,7 @@ async function add(req, res, next) {
     try {
         const reclamation = new REclamation(req.body);
         await reclamation.save();
-        res.status(200).send("reclation added successfully");
+        res.status(200).json("reclation added successfully");
     } catch (err) {
         console.error(err);
     }
@@ -21,13 +21,13 @@ async function show(req, res, next) {
 async function update(req, res, next) {
     try {
         const data = await REclamation.findByIdAndUpdate(req.params.id, req.body).populate('user', 'firstName lastName');
-        res.send("updated");
+        res.json("updated");
     } catch (err) {  console.log(err); }
 }
 async function deletreclamation(req, res, next) {
     try {
         const data = await REclamation.findByIdAndDelete(req.params.id, req.body);
-        res.send("removed");
+        res.json("removed");
     }
     catch (err) { console.log(err); }
 }
@@ -84,7 +84,19 @@ async function findOne(req, res, next) {
         res.status(500).send('An error occurred while fetching the reclamation.');
     }
 };
-
+async function getReclamation(req, res, next) {
+    try {
+      const bus = await REclamation.findById(req.params.id)
+      if (!bus) {
+        return res.status(404).json("reclamation not found");
+      }
+      res.json(bus);
+    } catch (err) {
+      console.log(err);
+      res.status(500).json("Error fetching chauffeur");
+    }
+  }
+  
 async function genererNotificationReclamation(req, res) {
     try {
         // Rechercher toutes les réclamations non lues
@@ -121,5 +133,6 @@ module.exports = {
     deletreclamation,
     getReclamationAndMarkAsRead,
     findOne,
-    genererNotificationReclamation
+    genererNotificationReclamation,
+    getReclamation
 }

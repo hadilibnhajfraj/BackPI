@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const dotenv = require('dotenv');
 const mongoConnection = require("../BackPI/config/dbconnection.json");
 const path = require("path");
+const cors = require("cors");
 dotenv.config();
 var app = express(); // Move this line up
 // les deux lignes hethom homa ali ya9raw fichier .twig ay haja feha html
@@ -17,6 +18,15 @@ mongoose
   })
   .then(() => console.log("Mongo connected"))
   .catch((err) => console.error("Mongo connection error:", err));
+  app.use(cors());
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Credentials", true);
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
+  );
+  next();
+});
 var messageRouter = require("../BackPI/routes/messageroute");
 var userRoute = require("../BackPI/routes/userroute");
 var etudiantRoute = require("../BackPI/routes/etudiantRoute");
