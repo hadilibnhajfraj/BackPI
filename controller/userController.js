@@ -38,13 +38,13 @@ exports.login = async (req, res) => {
       const { email, password } = req.body;
       console.log(email + " : " + password);
       if (!email || !password) {
-        return res.status(422).send({ error: "Invalid email or password" });
+        return res.status(422).json({ error: "Invalid email or password" });
       }
   
       const user = await User.findOne({ email });
   
       if (!user) {
-        return res.status(422).send({ error: "Invalid email or password" });
+        return res.status(422).json({ error: "Invalid email or password" });
       }
   
       try {
@@ -57,11 +57,11 @@ exports.login = async (req, res) => {
       } catch (e) {
         // Si la comparaison échoue, envoyer une réponse d'erreur
         console.error(e);
-        return res.status(401).send({ error: "Invalid email or password" });
+        return res.status(401).json({ error: "Invalid email or password" });
       }
     } catch (err) {
       console.error(err);
-      return res.status(500).send({ error: "Internal server error" });
+      return res.status(500).json({ error: "Internal server error" });
     }
   }
   
@@ -210,7 +210,7 @@ async function sendResetCodeByEmail(email, resetCode) {
       if (enteredCode !== resetCodeFromDB) {
         console.log("Code de réinitialisation invalide : " + enteredCode);
         console.log("Code de réinitialisation enregistré : " + resetCodeFromDB);
-        return res.status(400).send("Code de réinitialisation invalide");
+        return res.status(200).send("Code de réinitialisation invalide");
       }
   
       // Code de réinitialisation correct
