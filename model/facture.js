@@ -39,7 +39,7 @@ const FactureSchema = new Schema({
   frais: [{
     nom: String,
     prix: Number
-  }], // Liste des noms et prix des frais
+  }],
   userName: {
     type: String
   }
@@ -51,20 +51,30 @@ FactureSchema.pre('validate', async function(next) {
   }
 
   try {
-    // Générer la référence de facture avec le préfixe et le compteur
-    const count = await this.constructor.countDocuments({ reference: { $exists: true } }) + 1;
-    this.reference = `FAC-EDUKIDS-${count}`;
+    let count = 1;
+    let referenceExists = true;
+
+    while (referenceExists) {
+      const reference = `FAC-EDUKIDS-${count}`;
+      const existingFacture = await this.constructor.findOne({ reference });
+
+      if (!existingFacture) {
+        this.reference = reference;
+        referenceExists = false;
+      } else {
+        count++;
+      }
+    }
 
     if (this.offreId) {
-      const Offre = mongoose.model('Offre'); // Assurez-vous que le modèle Offre est chargé
+      const Offre = mongoose.model('Offre');
       const offre = await Offre.findById(this.offreId).populate('frais');
 
       if (offre) {
         this.nomOffre = offre.nom;
         this.montantApresRemise = offre.montantApresRemise;
         this.frais = offre.detailsFrais.map(frais => ({ nom: frais.nom, prix: frais.prix }));
-        
-        // Récupérer le nom de l'utilisateur depuis l'offre
+
         this.userName = offre.userName;
       } else {
         return next(new Error("L'offre spécifiée n'existe pas."));

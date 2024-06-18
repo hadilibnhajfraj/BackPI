@@ -7,10 +7,22 @@ async function addFacture(req, res, next) {
   try {
     const facture = new Facture(req.body);
     await facture.save();
-    res.send("Facture ajoutée");
+    res.json("Facture ajoutée");
   } catch (err) {
     console.log(err);
-    res.status(500).send("Erreur lors de l'ajout de la facture");
+    res.status(500).json("Erreur lors de l'ajout de la facture");
+  }
+}
+
+async function get(req, res, next) {  // Nouvelle méthode pour récupérer un frais par ID
+  try {
+    const facture = await Facture.findById(req.params.id);
+    if (!facture) {
+      return res.status(404).json({ message: "Facture not found" });
+    }
+    res.json(facture);
+  } catch (err) {
+    console.log(err);
   }
 }
 
@@ -176,4 +188,4 @@ async function searchFacturesByStatut(req, res, next) {
 
 
 
-module.exports = { addFacture, show, update, deletefacture, generatePdf, getChequesForFacture, searchFactures, searchFacturesByStatut  };
+module.exports = { addFacture, show, update, deletefacture, generatePdf, getChequesForFacture, searchFactures, searchFacturesByStatut, get  };

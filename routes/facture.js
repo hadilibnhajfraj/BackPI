@@ -6,6 +6,7 @@ const facturecontroller = require("../controller/facturecontroller");
 // Routes pour les factures
 router.post("/addfacture", facturecontroller.addFacture);
 router.get("/show", facturecontroller.show);
+router.get("/show/:id", facturecontroller.get);
 router.put("/update/:id", facturecontroller.update);
 router.delete("/delete/:id", facturecontroller.deletefacture);
 router.get('/generatePdf/:id', facturecontroller.generatePdf);

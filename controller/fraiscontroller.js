@@ -11,6 +11,18 @@ async function add(req, res, next) {
   }
 }
 
+async function get(req, res, next) {  // Nouvelle méthode pour récupérer un frais par ID
+  try {
+    const frais = await Frais.findById(req.params.id);
+    if (!frais) {
+      return res.status(404).json({ message: "Frais not found" });
+    }
+    res.json(frais);
+  } catch (err) {
+    console.log(err);
+  }
+}
+
 async function show(req, res, next) {
   try {
     const data = await Frais.find();
@@ -23,7 +35,7 @@ async function show(req, res, next) {
 async function update(req, res, next) {
   try {
     await Frais.findByIdAndUpdate(req.params.id, req.body);
-    res.send("updated");
+    res.json("updated");
   } catch (err) {
     console.log(err);
   }
@@ -38,4 +50,4 @@ async function deletefrais(req, res, next) {
   }
 }
 
-module.exports = { add, show, update, deletefrais };
+module.exports = { add, show, update, deletefrais,get  };
