@@ -19,7 +19,7 @@ const port = process.env.PORT || 3000;
 
 const corsOptions = {
   origin: 'http://localhost:4200',
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH','DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 };
 

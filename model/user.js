@@ -6,6 +6,7 @@ const userSchema = new Schema({
     password: { type: String, required: true },
     firstName: { type: String, trim: true },
     lastName: { type: String, trim: true },
+    validatedByAdmin: { type: Boolean, default: false },
     email: { type: String, required: true, unique: true, trim: true },
     activated: { type: Boolean, default: false },
     langKey: { type: String, trim: true },
@@ -17,6 +18,7 @@ const userSchema = new Schema({
     idtMatag: { type: Number },
     tel: { type: String, trim: true },
     countryCode: { type: String, trim: true },
+    resetCode: { type: String }, // Assurez-vous que ce champ est bien défini
     enableOtpMail: { type: Boolean },
     authorities: [{ type: String, enum: ['admin', 'enseignant', 'parent'] }],
     createdBy: String,
