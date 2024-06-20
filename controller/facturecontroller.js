@@ -1,7 +1,7 @@
 const Facture = require("../model/facture");
 const Cheque = require("../model/cheque");
 const PDFDocument = require('pdfkit');
-
+const QRCode = require('qrcode');
 // Ajouter une facture
 async function addFacture(req, res, next) {
   try {
@@ -14,15 +14,51 @@ async function addFacture(req, res, next) {
   }
 }
 
-async function get(req, res, next) {  // Nouvelle méthode pour récupérer un frais par ID
+async function get(req, res, next) {  // Nouvelle méthode pour récupérer une facture par ID avec les détails des chèques et des offres
   try {
-    const facture = await Facture.findById(req.params.id);
+    const facture = await Facture.findById(req.params.id).populate({
+      path: 'offreId',
+      populate: {
+        path: 'frais'
+      }
+    });
+
     if (!facture) {
       return res.status(404).json({ message: "Facture not found" });
     }
-    res.json(facture);
+
+    const cheques = await Cheque.find({ factureId: req.params.id });
+
+    const chequesInfo = cheques.map(cheque => ({
+      reference: cheque.reference,
+      montant: cheque.montant,
+      echeance: cheque.echeance
+    }));
+
+    const offreDetails = facture.offreId ? {
+      nomOffre: facture.offreId.nom, // Assuming `nom` field exists in your `Offre` model
+      frais: facture.offreId.frais.map(frais => ({
+        nom: frais.nom,
+        prix: frais.prix
+      }))
+    } : null;
+
+    res.json({
+      facture: {
+        reference: facture.reference,
+        montantApresRemise: facture.montantApresRemise,
+        montantCheque: facture.montantCheque,
+        montantRestant: facture.montantRestant,
+        statut: facture.statut,
+        userName: facture.userName, // Assuming this field exists in your Facture model
+        date: facture.date // Assuming this field exists in your Facture model
+      },
+      cheques: chequesInfo,
+      offre: offreDetails
+    });
   } catch (err) {
     console.log(err);
+    res.status(500).json("Erreur lors de la récupération de la facture");
   }
 }
 
@@ -40,7 +76,7 @@ async function show(req, res, next) {
 async function update(req, res, next) {
   try {
     await Facture.findByIdAndUpdate(req.params.id, req.body);
-    res.send("updated");
+    res.json("updated");
   } catch (err) {
     console.log(err);
   }
@@ -186,6 +222,65 @@ async function searchFacturesByStatut(req, res, next) {
   }
 }
 
+async function generateQrCode(req, res, next) {
+  try {
+    const facture = await Facture.findById(req.params.id).populate({
+      path: 'offreId',
+      populate: {
+        path: 'frais'
+      }
+    });
+
+    if (!facture) {
+      return res.status(404).json({ message: "Facture non trouvée" });
+    }
+
+    const cheques = await Cheque.find({ factureId: req.params.id });
+
+    const chequesInfo = cheques.map(cheque => ({
+      reference: cheque.reference,
+      montant: cheque.montant,
+      echeance: cheque.echeance
+    }));
+
+    const offreDetails = facture.offreId ? {
+      nomOffre: facture.offreId.nom, // Assuming `nom` field exists in your `Offre` model
+      frais: facture.offreId.frais.map(frais => ({
+        nom: frais.nom,
+        prix: frais.prix
+      }))
+    } : null;
+
+    const factureData = {
+      facture: {
+        reference: facture.reference,
+        montantApresRemise: facture.montantApresRemise,
+        montantCheque: facture.montantCheque,
+        montantRestant: facture.montantRestant,
+        statut: facture.statut,
+        userName: facture.userName, // Assuming this field exists in your Facture model
+        date: facture.date.toLocaleDateString() // Format the date
+      },
+      cheques: chequesInfo,
+      offre: offreDetails
+    };
+
+    const qrData = JSON.stringify(factureData);
+
+    QRCode.toDataURL(qrData, (err, url) => {
+      if (err) {
+        console.log(err);
+        return res.status(500).json("Erreur lors de la génération du QR code");
+      }
+
+      res.json({ qrCodeUrl: url });
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json("Erreur lors de la récupération de la facture");
+  }
+}
 
 
-module.exports = { addFacture, show, update, deletefacture, generatePdf, getChequesForFacture, searchFactures, searchFacturesByStatut, get  };
+
+module.exports = { addFacture, show, update, deletefacture, generatePdf, getChequesForFacture, searchFactures, searchFacturesByStatut, get, generateQrCode  };
