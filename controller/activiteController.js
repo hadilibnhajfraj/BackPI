@@ -87,8 +87,8 @@ const updateActivite = async (req, res, next) => {
     console.log("Activité mise à jour avec succès :", updatedActivite);
     res.json(updatedActivite);
   } catch (err) {
-    console.error('Erreur lors de la mise à jour de l\'activité :', err);
-    res.status(500).json('Erreur serveur');
+    console.error("Erreur lors de la mise à jour de l'activité :", err);
+    res.status(500).json("Erreur serveur");
   }
 };
 
@@ -96,32 +96,32 @@ const uploadImages = async (req, res) => {
   try {
     upload(req, res, async function (err) {
       if (err) {
-        console.error('Multer error:', err);
-        return res.status(500).json('Error uploading files');
-      }
-      
-      if (!req.files || !req.files['galerie']) {
-        return res.status(400).json('No images uploaded for the gallery');
+        console.error("Multer error:", err);
+        return res.status(500).json("Error uploading files");
       }
 
-      const images = req.files['galerie'].map((file) => ({
+      if (!req.files || !req.files["galerie"]) {
+        return res.status(400).json("No images uploaded for the gallery");
+      }
+
+      const images = req.files["galerie"].map((file) => ({
         data: file.buffer,
         contentType: file.mimetype,
       }));
 
       const activite = await Activites.findById(req.params.id);
       if (!activite) {
-        return res.status(404).json('Activité non trouvée');
+        return res.status(404).json("Activité non trouvée");
       }
 
       activite.galerie.push(...images);
       await activite.save();
 
-      res.json('Images téléchargées avec succès');
+      res.json("Images téléchargées avec succès");
     });
   } catch (error) {
-    console.error('Server error:', error);
-    res.status(500).json('Erreur serveur');
+    console.error("Server error:", error);
+    res.status(500).json("Erreur serveur");
   }
 };
 
@@ -140,7 +140,7 @@ async function getActiviteId(req, res, next) {
 async function deleteActivites(req, res, next) {
   try {
     await Activites.findByIdAndDelete(req.params.id);
-    res.send("Removed");
+    res.json("Removed");
   } catch (err) {
     console.log(err);
   }
