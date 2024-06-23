@@ -39,8 +39,8 @@ app.use((req, res, next) => {
 });
 
 // Middleware pour analyser les corps de requête
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({limit: '50mb', extended: true }));
+app.use(bodyParser.json({ limit: '50mb' }));
 
 // Définition des routes
 app.use("/alergie", alergieRouter);

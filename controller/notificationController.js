@@ -3,6 +3,7 @@ const nodemailer = require("nodemailer");
 const axios = require('axios');
 // Importer le modèle de Notification
 const Notification = require("../model/Notification"); // Assurez-vous d'ajuster le chemin selon votre structure de dossiers
+const User = require("../model/User");
 async function getWeather() {
   const apiKey = '465e5eedb508a1b6073d12f51f59adb4'; // Replace with your OpenWeatherMap API key
   const url = `https://api.openweathermap.org/data/2.5/weather?q=tunis&appid=465e5eedb508a1b6073d12f51f59adb4&units=metric`;
@@ -53,11 +54,18 @@ const transporter = nodemailer.createTransport({
 // Définir la méthode envoyerNotification
 async function envoyerNotification(req, res) {
   try {
-    const { parentId, message } = req.body; // Récupérer parentId et message depuis le corps de la requête
+    const { emailParent, message } = req.body;
+
+    // Rechercher l'utilisateur parent dans la base de données par email
+    const parent = await User.findOne({ email: emailParent, authorities: 'parent' });
+
+    if (!parent) {
+      return res.status(404).json({ erreur: "Parent non trouvé ou n'est pas un parent" });
+    }
 
     // Créer une instance de Notification
     const notification = new Notification({
-      parent: parentId,
+      parent: parent._id,
       message: message,
       statut: "envoyée",
     });
@@ -65,10 +73,10 @@ async function envoyerNotification(req, res) {
     // Enregistrer la notification dans la base de données
     await notification.save();
 
-    // Envoyer l'e-mail de notification au parent
+    // Envoyer l'e-mail de notification au parent trouvé
     const options = {
-      from: "t0429597@gmail.com", // Adresse e-mail expéditeur
-      to: "hadil.ibnhajfraj@gmail.com", // Adresse e-mail du destinataire (remplacez par l'e-mail du parent)
+      from: "t0429597@gmail.com",
+      to: emailParent, // Utilisation de l'e-mail fourni dans la requête
       subject: "Notification de l'école",
       text: message,
     };
@@ -82,13 +90,9 @@ async function envoyerNotification(req, res) {
     res.status(200).json({ message: "Notification envoyée avec succès" });
   } catch (erreur) {
     console.error("Erreur lors de l'envoi de la notification :", erreur);
-    // Répondre au client avec un statut 500 Internal Server Error et un message d'erreur
-    res
-      .status(500)
-      .json({ erreur: "Erreur lors de l'envoi de la notification" });
+    res.status(500).json({ erreur: "Erreur lors de l'envoi de la notification" });
   }
 }
-
 async function marquerCommeLue(req, res) {
   try {
     const notificationId = req.params.notificationId; // Récupérer l'identifiant de la notification depuis les paramètres d'URL

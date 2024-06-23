@@ -58,47 +58,85 @@ async function show(req, res, next) {
     const temperature = `${weatherData.main.temp}°C`;
     const weatherCondition = weatherData.weather[0].main; // Assuming the API provides a main weather condition
     res.json({ activites: data, temperature, weatherCondition });
-
   } catch (err) {
     console.log(err);
   }
 }
 
-async function update(req, res, next) {
-
-  upload(req, res, async function (err) {
-    if (err) {
-      console.error("Erreur Multer :", err);
-      return res.status(500).send("Erreur Multer");
-    }
-    if (!req.files || !req.files["galerie"]) {
-      console.log("Aucune image téléchargée pour la galerie");
-      return res
-        .status(400)
-        .send("Veuillez télécharger au moins une image pour la galerie");
-    }
-
-    const gallery = req.files["galerie"];
+const updateActivite = async (req, res, next) => {
+  try {
+    const weatherData = await getWeather();
+    const temperature = `${weatherData.main.temp}°C`;
     const activite = {
       nom: req.body.nom,
       localisation: req.body.localisation,
       date_act: req.body.date_act,
       description: req.body.description,
       local: req.body.local,
-      nblimite: req.body.nblimite
+      nblimite: req.body.nblimite,
+      temperature: temperature,
+      // Do not update galerie here
     };
-    activite.galerie = gallery.map((img) => ({
-      data: img.buffer,
-      contentType: img.mimetype,
-    }));
-    const updatedActivite = await Activites.findByIdAndUpdate(req.params.id, activite, { new: true });
+
+    const updatedActivite = await Activites.findByIdAndUpdate(
+      req.params.id,
+      activite,
+      { new: true }
+    );
 
     console.log("Activité mise à jour avec succès :", updatedActivite);
     res.json(updatedActivite);
-  });
+  } catch (err) {
+    console.error('Erreur lors de la mise à jour de l\'activité :', err);
+    res.status(500).json('Erreur serveur');
+  }
+};
+
+const uploadImages = async (req, res) => {
+  try {
+    upload(req, res, async function (err) {
+      if (err) {
+        console.error('Multer error:', err);
+        return res.status(500).json('Error uploading files');
+      }
+      
+      if (!req.files || !req.files['galerie']) {
+        return res.status(400).json('No images uploaded for the gallery');
+      }
+
+      const images = req.files['galerie'].map((file) => ({
+        data: file.buffer,
+        contentType: file.mimetype,
+      }));
+
+      const activite = await Activites.findById(req.params.id);
+      if (!activite) {
+        return res.status(404).json('Activité non trouvée');
+      }
+
+      activite.galerie.push(...images);
+      await activite.save();
+
+      res.json('Images téléchargées avec succès');
+    });
+  } catch (error) {
+    console.error('Server error:', error);
+    res.status(500).json('Erreur serveur');
+  }
+};
+
+async function getActiviteId(req, res, next) {
+  try {
+    const activites = await Activites.findById(req.params.id);
+    if (!activites) {
+      return res.status(404).json("Activites not found");
+    }
+    res.json(activites);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json("Error fetching Activites");
+  }
 }
-
-
 async function deleteActivites(req, res, next) {
   try {
     await Activites.findByIdAndDelete(req.params.id);
@@ -107,4 +145,11 @@ async function deleteActivites(req, res, next) {
     console.log(err);
   }
 }
-module.exports = { add, update, show, deleteActivites };
+module.exports = {
+  add,
+  updateActivite,
+  show,
+  deleteActivites,
+  getActiviteId,
+  uploadImages,
+};
