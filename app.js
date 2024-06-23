@@ -24,7 +24,7 @@ const busRouter = require("../BackPI/routes/bus");
 const activiteRouter = require("../BackPI/routes/activite");
 const notificationRouter = require("../BackPI/routes/notification");
 const inscriptionRouter = require("../BackPI/routes/inscription");
-
+const userRoutes = require('../BackPI/routes/userRoutes');
 const app = express();
 
 app.set("views", path.join(__dirname, "views"));
@@ -50,6 +50,7 @@ app.use("/bus", busRouter);
 app.use("/activite", activiteRouter);
 app.use("/notification", notificationRouter);
 app.use("/inscription", inscriptionRouter);
+app.use('/users', userRoutes);
 
 const server = http.createServer(app);
 

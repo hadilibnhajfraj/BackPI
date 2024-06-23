@@ -1,3 +1,4 @@
 {
-  "url": "mongodb://127.0.0.1:27017/edukids"
+    "url":"mongodb://127.0.0.1:27017/edukids",
+    "jwtkey":"QnVzQW5kQ3ljbGUgRGVmZW5zZSBTcXVhZCBTZWNyZXQgS2V5IEdlbmVyYXRvcg=="
 }
