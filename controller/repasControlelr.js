@@ -115,7 +115,25 @@ const getRepasAllergie = async (req, res) => {
       .json({ message: "Error fetching allergenes for the repas", error });
   }
 };
+ async function marquerRepasFavori(req, res) {
+  const { repasId } = req.params;
+  
+  try {
+    const repas = await Repas.findById(repasId);
+    if (!repas) {
+      return res.status(404).json({ error: 'Repas non trouvé' });
+    }
+    
+    // Inverser l'état de favori
+    repas.favori = !repas.favori;
+    await repas.save();
 
+    res.status(200).json({ message: 'Statut de favori mis à jour avec succès', repas });
+  } catch (err) {
+    console.error('Erreur lors de la mise à jour du statut de favori', err);
+    res.status(500).json({ error: 'Erreur lors de la mise à jour du statut de favori' });
+  }
+};
 async function updateAllergieRepas(req, res) {
   try {
     const repasId = req.params.id;
@@ -193,5 +211,5 @@ module.exports = {
   getRepas,
   getRepasAllergie,
   updateAllergieRepas,
- 
+  marquerRepasFavori
 };

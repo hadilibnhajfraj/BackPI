@@ -22,6 +22,10 @@ const RepasSchema = new Schema({
       ref: "alergie",
     },
   ],
+  favori: {
+    type: Boolean,
+    default: false, // Par défaut, le repas n'est pas favori
+  },
 });
 
 module.exports = mongoose.model("Repas", RepasSchema);

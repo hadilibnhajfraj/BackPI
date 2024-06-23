@@ -121,10 +121,50 @@ async function marquerCommeLue(req, res) {
       .json({ erreur: "Erreur lors du marquage de la notification comme lue" });
   }
 }
+async function compterNotificationsEnvoyees(req, res) {
+  try {
+    const { emailParent } = req.query;
+
+    // Trouver le parent avec l'email fourni
+    const parent = await User.findOne({ email: emailParent, authorities: 'parent' });
+
+    if (!parent) {
+      return res.status(404).json({ erreur: "Parent non trouvé ou n'est pas un parent" });
+    }
+
+    // Compter les notifications envoyées pour ce parent
+    const count = await Notification.countDocuments({ parent: parent._id, statut: "envoyée" });
+    res.status(200).json({ count });
+  } catch (error) {
+    console.error("Erreur lors du comptage des notifications envoyées :", error);
+    res.status(500).json({ erreur: "Erreur lors du comptage des notifications envoyées" });
+  }
+}
+async function getAllNotifications(req, res) {
+  try {
+    const { emailParent } = req.query;
+
+    // Trouver le parent avec l'email fourni
+    const parent = await User.findOne({ email: emailParent, authorities: 'parent' });
+
+    if (!parent) {
+      return res.status(404).json({ erreur: "Parent non trouvé ou n'est pas un parent" });
+    }
+
+    // Récupérer toutes les notifications pour ce parent
+    const notifications = await Notification.find({ parent: parent._id }).populate('parent');
+    res.status(200).json(notifications);
+  } catch (error) {
+    console.error("Erreur lors de la récupération des notifications :", error);
+    res.status(500).json({ erreur: "Erreur lors de la récupération des notifications" });
+  }
+}
 
 module.exports = {
   envoyerNotification,
   marquerCommeLue,
   getWeather,
-  envoyerWeatherUpdate
+  envoyerWeatherUpdate,
+  compterNotificationsEnvoyees,
+  getAllNotifications
 };

@@ -10,4 +10,5 @@ router.put("/updatetRepasallergie/:id/allergies", repasController.updateAllergie
 router.get('/repas/:id', repasController.getRepas);
 router.get('/repasallergie/:id', repasController.getRepasAllergie);
 router.delete("/deleteRepas/:id", repasController.deleteRepas);
+router.post('/repas/:repasId/favori', repasController.marquerRepasFavori);
 module.exports = router;
