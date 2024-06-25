@@ -53,14 +53,50 @@ async function show(req, res, next) {
 
 async function update(req, res, next) {
   try {
-    await Cheque.findByIdAndUpdate(req.params.id, req.body);
-    await updateChequePaiementStatus(req.params.id);
-    res.send("updated");
+    const chequeId = req.params.id;
+    const updatedCheque = req.body;
+
+    const cheque = await Cheque.findById(chequeId);
+    if (!cheque) {
+      return res.status(404).send("Chèque non trouvé");
+    }
+
+    // Ancien montant du chèque
+    const oldMontant = cheque.montant;
+
+    // Mettre à jour le chèque avec les nouvelles données
+    await Cheque.findByIdAndUpdate(chequeId, updatedCheque);
+
+    // Nouveau montant du chèque
+    const newMontant = updatedCheque.montant;
+
+    // Calculer la différence de montant
+    const differenceMontant = newMontant - oldMontant;
+
+    // Mettre à jour le montant restant de la facture associée
+    const facture = await Facture.findById(cheque.factureId);
+    if (!facture) {
+      return res.status(404).send("Facture non trouvée");
+    }
+
+    facture.montantCheque = (facture.montantCheque || 0) + differenceMontant;
+
+    if (facture.montantApresRemise - facture.montantCheque === 0) {
+      facture.statut = "soldé";
+    } else {
+      facture.statut = "non soldé";
+    }
+
+    // Sauvegarder la facture mise à jour
+    await facture.save();
+
+    res.json("Chèque mis à jour avec succès");
   } catch (err) {
-    console.log(err);
+    console.error(err);
     res.status(500).send("Erreur lors de la mise à jour du chèque");
   }
 }
+
 
 async function deletecheque(req, res, next) {
   try {
@@ -121,6 +157,7 @@ async function checkChequeEcheance(req, res, next) {
   }
 }
 
+
 async function updateChequePaiementStatus(chequeId) {
   try {
     const chequeExistsInBanque = await Banque.findOne({ chequeId });
@@ -152,4 +189,34 @@ async function showNonPaidCheques(req, res, next) {
   }
 }
 
-module.exports = { addCheque, show, update, deletecheque, checkChequeEcheance, updateChequePaiementStatus, updateChequeStatusToNon, showNonPaidCheques };
+async function getMontantRestant(req, res, next) {
+  try {
+    const factureId = req.params.factureId;
+    const facture = await Facture.findById(factureId);
+    if (!facture) {
+      return res.status(404).send("Facture non trouvée");
+    }
+
+    const montantRestant = facture.montantApresRemise - (facture.montantCheque || 0);
+    res.json({ montantRestant }); // Assurez-vous que cela renvoie un objet avec "montantRestant"
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Erreur lors de la récupération du montant restant de la facture");
+  }
+}
+
+async function getById(req, res, next) {
+  try {
+    const cheque = await Cheque.findById(req.params.id);
+    if (!cheque) {
+      return res.status(404).send("Chèque non trouvé");
+    }
+    res.json(cheque);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Erreur lors de la récupération du chèque");
+  }
+}
+
+module.exports = { addCheque, show, update, deletecheque, checkChequeEcheance, updateChequePaiementStatus, updateChequeStatusToNon,
+   showNonPaidCheques, getMontantRestant, getById };

@@ -11,6 +11,7 @@ const facturerouter = require("./routes/facture");
 const fraisrouter = require("./routes/frais");
 const banquerouter = require("./routes/banque");
 const userrouter = require("./routes/user");
+const virementrouter = require("./routes/virement");
 
 const EventEmitter = require('events');
 
@@ -38,6 +39,7 @@ app.use("/facture", facturerouter);
 app.use("/frais", fraisrouter);
 app.use("/banque", banquerouter);
 app.use("/user", userrouter);
+app.use("/virement", virementrouter);
 
 // Connexion à MongoDB
 mongoose.connect(mongoconnect.url, mongoconnect.options)

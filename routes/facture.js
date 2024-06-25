@@ -18,6 +18,7 @@ router.get('/searchStatut', facturecontroller.searchFacturesByStatut);
 // Nouvelle route pour récupérer les informations des paiements par chèque pour chaque facture
 router.get('/:id/cheques', facturecontroller.getChequesForFacture);
 router.get('/generateQrCode/:id', facturecontroller.generateQrCode);
+router.get('/countFraisByType', facturecontroller.countFraisByType);
 
 
 // Exemple d'autre route

@@ -1,5 +1,6 @@
 const Facture = require("../model/facture");
 const Cheque = require("../model/cheque");
+const Virement = require("../model/virement");
 const PDFDocument = require('pdfkit');
 const QRCode = require('qrcode');
 // Ajouter une facture
@@ -243,8 +244,16 @@ async function generateQrCode(req, res, next) {
       echeance: cheque.echeance
     }));
 
+    const virements = await Virement.find({ factureId: req.params.id });
+
+    const virementsInfo = virements.map(virement => ({
+      reference: virement.referenceVirement,
+      montant: virement.montant,
+      date: virement.date
+    }));
+
     const offreDetails = facture.offreId ? {
-      nomOffre: facture.offreId.nom, // Assuming `nom` field exists in your `Offre` model
+      nomOffre: facture.offreId.nom,
       frais: facture.offreId.frais.map(frais => ({
         nom: frais.nom,
         prix: frais.prix
@@ -258,10 +267,11 @@ async function generateQrCode(req, res, next) {
         montantCheque: facture.montantCheque,
         montantRestant: facture.montantRestant,
         statut: facture.statut,
-        userName: facture.userName, // Assuming this field exists in your Facture model
-        date: facture.date.toLocaleDateString() // Format the date
+        userName: facture.userName,
+        date: facture.date.toLocaleDateString()
       },
       cheques: chequesInfo,
+      virements: virementsInfo, // Ajout des virements
       offre: offreDetails
     };
 
@@ -281,6 +291,47 @@ async function generateQrCode(req, res, next) {
   }
 }
 
+async function countFraisByType(req, res, next) {
+  try {
+    const factures = await Facture.find().populate({
+      path: 'offreId',
+      populate: {
+        path: 'frais'
+      }
+    });
+
+    if (!factures || factures.length === 0) {
+      return res.status(404).send("Aucune facture trouvée");
+    }
+
+    // Initialisation du compteur pour les frais
+    const fraisCount = {};
+
+    // Parcourir chaque facture et compter les frais
+    factures.forEach(facture => {
+      if (facture.offreId && facture.offreId.frais && facture.offreId.frais.length > 0) {
+        facture.offreId.frais.forEach(frais => {
+          const fraisNom = frais.nom;
+          if (fraisNom) {
+            if (fraisCount[fraisNom]) {
+              fraisCount[fraisNom] += 1;
+            } else {
+              fraisCount[fraisNom] = 1;
+            }
+          }
+        });
+      }
+    });
+
+    res.json(fraisCount);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send("Erreur lors du calcul des frais par type");
+  }
+}
 
 
-module.exports = { addFacture, show, update, deletefacture, generatePdf, getChequesForFacture, searchFactures, searchFacturesByStatut, get, generateQrCode  };
+
+
+module.exports = { addFacture, show, update, deletefacture, generatePdf, getChequesForFacture, 
+  searchFactures, searchFacturesByStatut, get, generateQrCode ,countFraisByType  };

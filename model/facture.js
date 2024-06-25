@@ -18,6 +18,10 @@ const FactureSchema = new Schema({
     type: Number,
     default: 0
   },
+  montantVirement: {
+    type: Number,
+    default: 0
+  },
   montantRestant: {
     type: Number,
     default: function() {
@@ -47,7 +51,7 @@ const FactureSchema = new Schema({
 
 FactureSchema.pre('validate', async function(next) {
   if (!this.isNew) {
-    return next(); // Ne rien faire si la facture n'est pas nouvellement créée
+    return next();
   }
 
   try {
@@ -90,7 +94,7 @@ FactureSchema.pre('validate', async function(next) {
 });
 
 FactureSchema.pre('save', function(next) {
-  this.montantRestant = this.montantApresRemise - this.montantCheque;
+  this.montantRestant = this.montantApresRemise - (this.montantCheque + this.montantVirement);
   if (this.montantRestant <= 0) {
     this.statut = 'soldé';
   }
