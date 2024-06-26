@@ -8,9 +8,9 @@ router.post('/login', userController.login);
 
 router.post('/', userController.createUser);
 router.get('/listeuser', userController.getAllUsers);
-router.get('/:id', userController.getUserById);
-router.put('/:id', userController.updateUser);
-router.delete('/:id', userController.deleteUser);
+router.get('/getUser/:id', userController.getUserById);
+router.put('/updateUser/:id', userController.updateUser);
+router.delete('/deleteUser/:id', userController.deleteUser);
 router.post("/forgetpassword", userController.forgetPassword);
 router.put("/resetpassword/:email", userController.resetPassword);
 router.get("/resetpasswordcode/:id/:token", userController.resetPasswordCode);
