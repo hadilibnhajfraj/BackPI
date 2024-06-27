@@ -5,14 +5,7 @@ const bodyParser = require("body-parser");
 const mongoconnect = require("./config/dbconnection.json");
 const path = require("path");
 const cors = require('cors');
-
-
 require('dotenv').config();
-
-
-
-//app.use(cors());
-
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -45,18 +38,40 @@ mongoose
   .catch((err) => console.log(err));
 
 
+// Chargement des routes
+const alergieRouter = require("../BackPI/routes/alergie");
+const etudiantRouter = require("../BackPI/routes/etudiant");
+const repasRouter = require("../BackPI/routes/repas");
+const busRouter = require("../BackPI/routes/bus");
+const activiteRouter = require("../BackPI/routes/activite");
+const notificationRouter = require("../BackPI/routes/notification");
+const inscriptionRouter = require("../BackPI/routes/inscription");
+
+
+app.set("views", path.join(__dirname, "views"));
+app.set("view engine", "twig");
+
+// Middleware CORS
+app.use(cors());
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Credentials", true);
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
+
+// Middleware pour analyser les corps de requête
+app.use(bodyParser.urlencoded({limit: '50mb', extended: true }));
+app.use(bodyParser.json({ limit: '50mb' }));
+
+// Définition des routes
+app.use("/alergie", alergieRouter);
+app.use("/etudiant", etudiantRouter);
+app.use("/repas", repasRouter);
+app.use("/bus", busRouter);
+app.use("/activite", activiteRouter);
+app.use("/notification", notificationRouter);
+app.use("/inscription", inscriptionRouter);
 const server = http.createServer(app);
-
-// Error handling middleware
-/*app.use((err, req, res, next) => {
-    if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
-        console.error("Bad JSON");
-        return res.status(400).send({ message: "Invalid JSON" }); // Send an appropriate response
-    }
-    next();
-});*/
-
-// Start the server
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });
