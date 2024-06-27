@@ -67,36 +67,44 @@ async function updated(req, res, next) {
 
             const exerciceId = req.params.id;
 
-            // Vérifie d'abord si l'exercice existe
-            const existingExercice = await Exercice.findById(exerciceId);
-            if (!existingExercice) {
-                return res.status(404).send("Exercice non trouvé.");
-            }
+            try {
+                // Recherche du cours existant par son ID
+                const existingExercice = await Exercice.findById(exerciceId);
+                if (!existingExercice) {
+                    return res.status(404).send("Exercice non trouvé.");
+                }
 
-            // Supprime les anciens documents
-            existingExercice.documents.forEach(docPath => {
-                fs.unlink(path.join(__dirname, '..', docPath), err => {
-                    if (err) {
+                // Suppression des documents existants associés au cours
+                console.log(`Existing documents to delete: ${existingExercice.documents}`);
+                for (const docPath of existingExercice.documents) {
+                    try {
+                        await fs.promises.unlink(path.join(__dirname, '..', docPath));
+                        console.log(`Deleted file: ${docPath}`);
+                    } catch (err) {
                         console.error(`Erreur lors de la suppression du fichier: ${err.message}`);
                     }
-                });
-            });
+                }
 
-            // Créez un tableau de chemins de fichiers à partir des nouveaux fichiers téléchargés
-            const documents = req.files.map(file => file.path);
+                // Mapping des nouveaux chemins de fichiers depuis les fichiers téléversés
+                const documents = req.files.map(file => file.path);
+                console.log(`New documents paths: ${documents}`);
 
-            // Met à jour tous les champs de l'exercice avec les données de la requête
-            existingExercice.description = req.body.description;
-            existingExercice.dateLimite = req.body.dateLimite;
-            existingExercice.typeExercice = req.body.typeExercice;
-            existingExercice.cours = req.body.cours;
-            existingExercice.id_user = req.body.id_user;
-            existingExercice.documents = documents;
+                // Met à jour tous les champs de l'exercice avec les données de la requête
+                existingExercice.description = req.body.description;
+                existingExercice.dateLimite = req.body.dateLimite;
+                existingExercice.typeExercice = req.body.typeExercice;
+                existingExercice.cours = req.body.cours;
+                existingExercice.id_user = req.body.id_user;
+                existingExercice.documents = documents;
 
-            // Enregistre les modifications
-            await existingExercice.save();
+                // Enregistre les modifications
+                await existingExercice.save();
 
-            res.status(200).json("Exercice mis à jour avec succès.");
+                res.status(200).json("Exercice mis à jour avec succès.");
+            } catch (err) {
+                console.log(err);
+                res.status(500).json("Une erreur s'est produite lors de la mise à jour de l'exercice.");
+            }
         });
     } catch (err) {
         console.log(err);

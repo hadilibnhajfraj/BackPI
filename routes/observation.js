@@ -16,7 +16,7 @@ router.get('/showByName/:name',observationController.showByone);
 
 router.get('/meal/:mealType', observationController.getByMealType);
 
-router.get('/mood/:mood', observationController.getByMood);
+router.get('/byMood/:mood', observationController.getByMood);
 
 router.get('/health/:healthStatus', observationController.getByHealthStatus);
 

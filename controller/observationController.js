@@ -1,4 +1,4 @@
-const Observation = require ("../model/observation");
+const Observation = require("../model/observation");
 
 async function add(req, res, next) {
     try {
@@ -57,35 +57,40 @@ async function showByone(req, res, next) {
     }
 };
 
+// Fonction pour obtenir les observations par type de repas
 async function getByMealType(req, res, next) {
     try {
         const { mealType } = req.params;
         const data = await Observation.find({ repas: mealType });
         res.status(200).json(data);
     } catch (err) {
-        console.log(err);
+        console.error('Erreur dans getByMealType:', err);
+        res.status(500).json({ message: 'Une erreur est survenue lors de la récupération des données par type de repas.' });
     }
 }
 
 
+// Fonction pour obtenir les observations par humeur
 async function getByMood(req, res, next) {
     try {
         const { mood } = req.params;
         const data = await Observation.find({ humeur: mood });
         res.status(200).json(data);
     } catch (err) {
-        console.log(err);
+        console.error('Error in getByMood:', err);
+        res.status(500).json({ message: 'An error occurred while fetching data by mood.' });
     }
 }
 
-
+// Fonction pour obtenir les observations par état de santé
 async function getByHealthStatus(req, res, next) {
     try {
         const { healthStatus } = req.params;
         const data = await Observation.find({ sante: healthStatus });
         res.status(200).json(data);
     } catch (err) {
-        console.log(err);
+        console.error('Error in getByHealthStatus:', err);
+        res.status(500).json({ message: 'An error occurred while fetching data by health status.' });
     }
 }
 

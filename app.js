@@ -9,14 +9,15 @@ const path = require("path");
 mongo.connect(mongoconnect.url, {useNewUrlParser: true,useUnifiedTopology: true}).then(() => console.log("mongo connecter")).catch((err) => console.log(err));
 
 
-const classesRouter = require("../BackPI/routes/classes.js");
-const activiteRouter = require("../BackPI/routes/activite.js");
-const etudiantRouter = require("../BackPI/routes/etudiant.js");
-const exerciceRouter = require("../BackPI/routes/exercice.js");
-const coursRouter = require("../BackPI/routes/cours.js");
-const observationRouter = require("../BackPI/routes/observation.js");
-const userRouter = require("../BackPI/routes/user.js");
-const matiereRouter = require("../BackPI/routes/matiere.js");
+const classesRouter = require("./routes/classes.js");
+const activiteRouter = require("./routes/activite.js");
+const etudiantRouter = require("./routes/etudiant.js");
+const exerciceRouter = require("./routes/exercice.js");
+const coursRouter = require("./routes/cours.js");
+const observationRouter = require("./routes/observation.js");
+const userRouter = require("./routes/user.js");
+const matiereRouter = require("./routes/matiere.js");
+const devoirRouter = require("./routes/devoir.js");
 
 
 var app = express();
@@ -36,6 +37,8 @@ app.use("/cours", coursRouter);
 app.use("/observation",observationRouter);
 app.use("/user", userRouter);
 app.use("/matiere", matiereRouter);
+app.use("/devoir", devoirRouter);
+
 app.use('/uploads', express.static('uploads'));
 
 const server = http.createServer(app);
