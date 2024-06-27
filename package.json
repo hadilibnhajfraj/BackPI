@@ -1,7 +1,6 @@
 {
   "name": "backpi",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "scripts": {
     "start": "node app.js",
@@ -10,6 +9,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@google/generative-ai": "^0.11.3",
+    "cors": "^2.8.5",
+    "googleapis": "^140.0.0",
     "axios": "^1.7.2",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
@@ -21,8 +23,19 @@
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.9.14",
     "nodemon": "^3.1.0",
+    "openai": "^4.47.1",
     "socket.io": "^4.7.5",
     "twig": "^1.17.1",
     "yup": "^1.4.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hadilibnhajfraj/BackPI.git"
+  },
+  "keywords": [],
+  "bugs": {
+    "url": "https://github.com/hadilibnhajfraj/BackPI/issues"
+  },
+  "homepage": "https://github.com/hadilibnhajfraj/BackPI#readme",
+  "description": ""
 }

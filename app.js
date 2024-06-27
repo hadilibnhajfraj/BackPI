@@ -11,9 +11,9 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 const corsOptions = {
-  origin: 'http://localhost:4200',
-  methods: ['GET', 'POST', 'PUT', 'PATCH','DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+    origin: 'http://localhost:4200',
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
 };
 
 app.use(cors(corsOptions));
@@ -24,29 +24,32 @@ app.use(express.urlencoded({ extended: true }));*/
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-// Routes
-const userRoutes = require('./routes/userRoutes');
-app.use('/users', userRoutes);
 
 // Connect to MongoDB
 mongoose
-  .connect(mongoconnect.url, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => console.log("MongoDB connecté"))
-  .catch((err) => console.log(err));
+    .connect(mongoconnect.url, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+    })
+    .then(() => console.log("MongoDB connecté"))
+    .catch((err) => console.log(err));
 
 
 // Chargement des routes
 const alergieRouter = require("../BackPI/routes/alergie");
-const etudiantRouter = require("../BackPI/routes/etudiant");
 const repasRouter = require("../BackPI/routes/repas");
 const busRouter = require("../BackPI/routes/bus");
-const activiteRouter = require("../BackPI/routes/activite");
 const notificationRouter = require("../BackPI/routes/notification");
 const inscriptionRouter = require("../BackPI/routes/inscription");
-
+const classesRouter = require("../BackPI/routes/classes.js");
+const activiteRouter = require("../BackPI/routes/activite.js");
+const etudiantRouter = require("../BackPI/routes/etudiant.js");
+const exerciceRouter = require("../BackPI/routes/exercice.js");
+const coursRouter = require("../BackPI/routes/cours.js");
+const observationRouter = require("../BackPI/routes/observation.js");
+const userRouter = require("../BackPI/routes/userRoutes.js");
+const matiereRouter = require("../BackPI/routes/matiere.js");
+const devoirRouter = require("../BackPI/routes/devoir.js");
 
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "twig");
@@ -54,23 +57,35 @@ app.set("view engine", "twig");
 // Middleware CORS
 app.use(cors());
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Credentials", true);
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  next();
+    res.header("Access-Control-Allow-Credentials", true);
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+    next();
 });
 
 // Middleware pour analyser les corps de requête
-app.use(bodyParser.urlencoded({limit: '50mb', extended: true }));
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 app.use(bodyParser.json({ limit: '50mb' }));
 
 // Définition des routes
 app.use("/alergie", alergieRouter);
-app.use("/etudiant", etudiantRouter);
 app.use("/repas", repasRouter);
 app.use("/bus", busRouter);
-app.use("/activite", activiteRouter);
 app.use("/notification", notificationRouter);
 app.use("/inscription", inscriptionRouter);
+app.use("/classes", classesRouter);
+app.use("/activite", activiteRouter);
+app.use("/etudiant", etudiantRouter);
+app.use("/exercice", exerciceRouter);
+app.use("/cours", coursRouter);
+app.use("/observation", observationRouter);
+app.use("/users", userRouter);
+app.use("/matiere", matiereRouter);
+app.use("/devoir", devoirRouter);
+
+
+app.use('/uploads', express.static('uploads'));
+
+
 const server = http.createServer(app);
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
