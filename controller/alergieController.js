@@ -1,5 +1,5 @@
 const Alergie = require("../model/Alergie");
-const User = require("../model/User");
+const User = require("../model/user");
 async function getAllEtudiantIds() {
   try {
     const etudiants = await User.find({}, '_id'); // Récupère uniquement les ID des étudiants

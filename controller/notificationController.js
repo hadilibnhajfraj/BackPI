@@ -3,7 +3,7 @@ const nodemailer = require("nodemailer");
 const axios = require('axios');
 // Importer le modèle de Notification
 const Notification = require("../model/Notification"); // Assurez-vous d'ajuster le chemin selon votre structure de dossiers
-const User = require("../model/User");
+const User = require("../model/user");
 async function getWeather() {
   const apiKey = '465e5eedb508a1b6073d12f51f59adb4'; // Replace with your OpenWeatherMap API key
   const url = `https://api.openweathermap.org/data/2.5/weather?q=tunis&appid=465e5eedb508a1b6073d12f51f59adb4&units=metric`;

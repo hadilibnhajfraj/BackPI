@@ -1,4 +1,4 @@
-const User = require ("../model/User.js");
+const User = require ("../model/user.js");
 const Parent = require ("../model/Parent.js");
 async function add(req, res, next){
     try{
