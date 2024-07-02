@@ -16,6 +16,7 @@ router.get('/emailparent/:id', emploiecontroller.getEmailsOfParentsOfClassStuden
 router.get('/idenseignant/:id', emploiecontroller.getTeacherIdsByEmploiId);
 router.get('/emailenseignant/:id', emploiecontroller.getEmailsOfTeachersByEmploiId);
 router.post('/save/:id', emploiecontroller.generateAndSendGlobalTimetable);
+router.get('/getparentemploi/:id',emploiecontroller.emploiByParent)
 
 
 

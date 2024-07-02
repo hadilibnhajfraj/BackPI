@@ -3,7 +3,7 @@ const Salle = require('../model/salle'); // Assuming you have a Salle model
 const User = require('../model/user');
 const nodemailer = require('nodemailer');
 const Classe = require("../model/class");
-const Etudiant = require('../model/etudiant'); 
+const Etudiant = require('../model/etudiant');
 const Emploi = require('../model/emploi')
 
 async function add(req, res, next) {
@@ -29,7 +29,7 @@ async function show(req, res, next) {
 async function update(req, res, next) {
   try {
     await Seance.findByIdAndUpdate(req.params.id, req.body);
-    res.send("updated");
+    res.send({message:"updated"});
   } catch (err) {
     console.log(err);
   }
@@ -37,30 +37,30 @@ async function update(req, res, next) {
 
 async function deleted(req, res, next) {
   try {
-      // Trouver la séance à supprimer
-      const seanceId = req.params.id;
-      const seance = await Seance.findById(seanceId);
-      if (!seance) {
-          return res.status(404).send("Séance non trouvée.");
-      }
+    // Trouver la séance à supprimer
+    const seanceId = req.params.id;
+    const seance = await Seance.findById(seanceId);
+    if (!seance) {
+      return res.status(404).send("Séance non trouvée.");
+    }
 
-      // Trouver l'emploi auquel appartient la séance
-      const emploi = await Emploi.findById(seance.emploi);
-      if (!emploi) {
-          return res.status(404).send("Emploi non trouvé.");
-      }
+    // Trouver l'emploi auquel appartient la séance
+    const emploi = await Emploi.findById(seance.emploie);
+    if (!emploi) {
+      return res.status(404).send("Emploi non trouvé.");
+    }
 
-      // Supprimer la séance de la base de données
-      await Seance.findByIdAndDelete(seanceId);
+    // Supprimer la séance de la base de données
+    await Seance.findByIdAndDelete(seanceId);
 
-      // Mettre à jour l'emploi pour supprimer la référence à la séance
-      emploi.seances = emploi.seances.filter(id => id.toString() !== seanceId);
-      await emploi.save();
+    // Mettre à jour l'emploi pour supprimer la référence à la séance
+    emploi.seances = emploi.seances.filter(id => id.toString() !== seanceId);
+    await emploi.save();
 
-      res.send("Séance supprimée et emploi mis à jour.");
+    res.send({message : "Séance supprimée et emploi mis à jour."});
   } catch (err) {
-      console.log(err);
-      res.status(500).send("Une erreur est survenue lors de la suppression de la séance.");
+    console.log(err);
+    res.status(500).send("Une erreur est survenue lors de la suppression de la séance.");
   }
 }
 
@@ -138,7 +138,7 @@ const sendEmail = (to, subject, text) => {
   return transporter.sendMail(mailOptions);
 };
 
-async function cancelSeance (req, res) {
+async function cancelSeance(req, res) {
   try {
     const seanceId = req.params.id;
 
@@ -152,10 +152,10 @@ async function cancelSeance (req, res) {
     if (!emploi) {
       return res.status(404).json({ message: 'Emploi not found' });
     }
-      // Mettre à jour l'emploi pour supprimer la référence à la séance
-      emploi.seances = emploi.seances.filter(id => id.toString() !== seanceId);
-      await emploi.save();
-      
+    // Mettre à jour l'emploi pour supprimer la référence à la séance
+    emploi.seances = emploi.seances.filter(id => id.toString() !== seanceId);
+    await emploi.save();
+
     // Extraire les détails nécessaires
     const { enseignant, class: seanceClass, date, heure_debut, heure_fin } = seance;
 
@@ -180,7 +180,6 @@ async function cancelSeance (req, res) {
     // Envoyer les e-mails
     const emailPromises = [
       sendEmail(enseignant.email, emailSubject, emailText),
-      ...students.map(student => sendEmail(student.email, emailSubject, emailText)),
       ...parents.map(parent => sendEmail(parent.email, emailSubject, emailText)),
       ...admins.map(admin => sendEmail(admin.email, emailSubject, emailText))
     ];
@@ -194,6 +193,20 @@ async function cancelSeance (req, res) {
   }
 };
 
+async function findSeance(req, res, next) {
+  try {
+    const data = await Seance.findById(req.params.id);
+    if (!data) {
+      return res.status(404).json({ error: 'seance not found' });
+    }
+
+    res.status(200).json(data);
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ error: 'An error occurred while fetching the data.' });
+  }
+}
 
 
-module.exports = { add, show, update, deleted, getAvailableOptions, fetchAvailableOptions,cancelSeance };
+
+module.exports = { add, show, update, deleted, getAvailableOptions, fetchAvailableOptions, cancelSeance, findSeance };

@@ -7,5 +7,6 @@ router.put("/update/:id", seanceController.update);
 router.delete("/delete/:id", seanceController.deleted);
 router.get('/options', seanceController.fetchAvailableOptions);
 router.delete('/:id/cancel', seanceController.cancelSeance);
+router.get("/show/:id", seanceController.findSeance);
 
 module.exports = router;

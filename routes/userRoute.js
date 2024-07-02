@@ -5,4 +5,6 @@ router.post("/add", usercontroller.add);
 router.get("/show", usercontroller.show);
 router.put("/update/:id", usercontroller.update);
 router.delete("/delete/:id", usercontroller.deleteuser);
+router.get("/showParents", usercontroller.showParents);
+router.get("/show/:id", usercontroller.findUser);
 module.exports = router;

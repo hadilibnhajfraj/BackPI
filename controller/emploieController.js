@@ -10,6 +10,7 @@ const fs = require('fs');
 const path = require('path');
 const nodemailer = require('nodemailer');
 const Etudiant = require('../model/etudiant');
+const EmploiEnseignant = require('../model/emploieEnseignant')
 
 
 
@@ -53,6 +54,17 @@ async function add(req, res, next) {
         const offsetWeeks = parseInt(req.body.offsetWeeks || '0', 10);
         const { startOfWeek, endOfWeek } = getWeekStartAndEnd(offsetWeeks);
 
+        // Check if an emploi already exists for the same class and start date
+        const existingEmploi = await Emploi.findOne({
+            year: currentYear,
+            class: req.body.class,
+            date_debut: startOfWeek
+        });
+
+        if (existingEmploi) {
+            return res.status(400).json({ message: "Un emploi existe déjà pour cette classe et cette date de début." });
+        }
+
         // Create and save the Emploi without any file path
         const emploi = new Emploi({
             year: currentYear, // Automatic year selection
@@ -64,16 +76,22 @@ async function add(req, res, next) {
         });
 
         await emploi.save();
-        res.status(200).send("Emploi ajouté avec succès.");
+
+        // Add emploi's _id to the corresponding Classe
+        const classe = await Classe.findById(req.body.class);
+        if (!classe) {
+            return res.status(404).send("Classe not found.");
+        }
+
+        classe.emploies.push(emploi._id); // Add emploi _id to emploies array in Classe
+        await classe.save();
+
+        res.status(200).json({ _id: emploi._id, message: "Emploi ajouté avec succès." });
     } catch (err) {
         console.log(err);
-        res.status(500).send("An error occurred while adding the emploi.");
+        res.status(500).send("Une erreur s'est produite lors de l'ajout de l'emploi.");
     }
 }
-
-
-
-
 
 async function show(req, res, next) {
     try {
@@ -247,6 +265,29 @@ async function addSeance(req, res, next) {
 
         emploi.seances.push(newSeance._id);
         await emploi.save();
+          // Add enseignant to the teachers list in Classe
+          const classe = await Classe.findById(classId);
+          if (!classe) {
+              return res.status(404).json({ message: 'Classe not found' });
+          }
+  
+          // Check if enseignant is already in teachers array
+          if (!classe.teachers.includes(enseignant)) {
+              classe.teachers.push(enseignant);
+              await classe.save();
+          }
+
+           // Add enseignant to the teachers list in Matiere
+        const matiereDoc = await Matiere.findById(matiere);
+        if (!matiereDoc) {
+            return res.status(404).json({ message: 'Matiere not found' });
+        }
+
+        // Check if enseignant is already in the teachers array of the Matiere
+        if (!matiereDoc.enseignant.includes(enseignant)) {
+            matiereDoc.enseignant.push(enseignant);
+            await matiereDoc.save();
+        }
 
         res.status(200).json({ message: 'Seance added successfully', seance: newSeance });
     } catch (err) {
@@ -277,7 +318,7 @@ async function extendEmploie(req, res, next) {
         existingEmploi.date_fin = currentEndDate;
 
         await existingEmploi.save();
-        res.status(200).send("Emploi étendu avec succès.");
+        res.status(200).send({ message: "Emploi étendu avec succès." });
     } catch (err) {
         console.error(err);
         res.status(500).send("Une erreur est survenue lors de l'extension de l'emploi.");
@@ -369,7 +410,6 @@ async function showByClassId(req, res, next) {
 
 
 const generateTimetablePDF = async (emploiId) => {
-
     try {
         const emploi = await Emploi.findById(emploiId)
             .populate({
@@ -406,37 +446,52 @@ const generateTimetablePDF = async (emploiId) => {
         // Ajouter les horaires de séance en tant qu'en-têtes de colonne
         const seanceTimes = ['08:00 - 09:00', '09:00 - 10:00', '10:00 - 11:00', '11:00 - 12:00', '13:00 - 14:00', '14:00 - 15:00', '15:00 - 16:00', '16:00 - 17:00'];
 
-        // Créer l'objet des jours de la semaine avec les dates appropriées
-        const joursSemaine = {
-            lundi: new Date(emploi.date_debut),
-            mardi: new Date(emploi.date_debut),
-            mercredi: new Date(emploi.date_debut),
-            jeudi: new Date(emploi.date_debut),
-            vendredi: new Date(emploi.date_debut),
-            samedi: new Date(emploi.date_debut)
-        };
-
-        // Ajuster les dates pour chaque jour de la semaine
-        Object.keys(joursSemaine).forEach((jour, index) => {
-            joursSemaine[jour].setDate(joursSemaine[jour].getDate() + index);
-        });
-
-        // Initialize timetable data structure
+        // Initialize timetable data structure for each week
         const timetable = {};
-        const dates = Object.keys(joursSemaine); // Stocker les jours de la semaine
+        const dates = [];
 
-        // Initialiser toutes les combinaisons de jours et d'heures de début dans timetable
-        dates.forEach(date => {
-            timetable[date] = {};
-            seanceTimes.forEach(time => {
-                timetable[date][time] = [];
+        // Parcourir chaque semaine de l'emploi du temps
+        const currentDate = new Date(emploi.date_debut);
+        while (currentDate <= new Date(emploi.date_fin)) {
+            // Initialize days of the week for the current week
+            const joursSemaine = {
+                lundi: new Date(currentDate),
+                mardi: new Date(currentDate),
+                mercredi: new Date(currentDate),
+                jeudi: new Date(currentDate),
+                vendredi: new Date(currentDate),
+                samedi: new Date(currentDate)
+            };
+
+            // Adjust dates for each day of the week
+            Object.keys(joursSemaine).forEach((jour, index) => {
+                joursSemaine[jour].setDate(joursSemaine[jour].getDate() + index);
             });
-        });
+
+            // Initialize timetable for the current week
+            const week = {};
+            const weekDates = Object.keys(joursSemaine); // Store week days
+
+            // Store week dates
+            dates.push(...weekDates.map(date => joursSemaine[date].toDateString()));
+
+            // Initialize all day and time combinations in the timetable for the current week
+            weekDates.forEach(date => {
+                const dateString = joursSemaine[date].toDateString();
+                timetable[dateString] = {};
+                seanceTimes.forEach(time => {
+                    timetable[dateString][time] = [];
+                });
+            });
+
+            // Move to the next week
+            currentDate.setDate(currentDate.getDate() + 7);
+        }
 
         // Remplir la structure du tableau avec les données des séances
         emploi.seances.forEach(seance => {
             const seanceDate = new Date(seance.date);
-            const seanceDay = seanceDate.toLocaleDateString('fr-FR', { weekday: 'long' }).toLowerCase(); // Obtenez le jour de la semaine en minuscules
+            const seanceDay = seanceDate.toDateString();
             const startTime = `${seance.heure_debut.toString().padStart(2, '0')}:00 - ${seance.heure_fin.toString().padStart(2, '0')}:00`;
 
             // Vérifier si la combinaison de jour et d'heure de début existe dans timetable
@@ -508,6 +563,7 @@ const generateTimetablePDF = async (emploiId) => {
 
         emploi.file = fileName; // Mettre à jour le champ du nom du fichier
         await emploi.save();
+        console.log("hddhdhdhd"+ filePath)
         return filePath;
 
     } catch (err) {
@@ -518,15 +574,12 @@ const generateTimetablePDF = async (emploiId) => {
     }
 };
 
-const generateTimetableForTeacherPDF = async (emploiId, enseignantId) => {
+
+
+const generateTimetableForTeacherPDF = async (emploiId,enseignantId) => {
     try {
-        // Trouver l'emploi du temps
+        // Récupérer l'emploi du temps en fonction de l'ID
         const emploi = await Emploi.findById(emploiId)
-            .populate({
-                path: 'class',
-                model: Classe,
-                select: 'name'
-            })
             .populate({
                 path: 'seances',
                 populate: [
@@ -545,6 +598,11 @@ const generateTimetableForTeacherPDF = async (emploiId, enseignantId) => {
                         model: 'Matiere',
                         select: 'nom'
                     },
+                    {
+                        path: 'class',
+                        model: 'Classe',
+                        select: 'name'
+                    }
                 ]
             });
 
@@ -552,53 +610,110 @@ const generateTimetableForTeacherPDF = async (emploiId, enseignantId) => {
             console.log('No emploi found with this ID');
             return res.status(404).send('No emploi found with this ID');
         }
+        const allSeances = await Seance.find()
+        .populate({
+            path: 'salle',
+            model: 'Salle',
+            select: 'name'
+        })
+        .populate({
+            path: 'enseignant',
+            model: 'User',
+            select: 'firstName lastName'
+        })
+        .populate({
+            path: 'matiere',
+            model: 'Matiere',
+            select: 'nom'
+        })
+        .populate({
+            path: 'class',
+            model: 'Classe',
+            select: 'name'
+        });
 
-        // Trouver les informations de l'enseignant
-        const enseignant = await User.findById(enseignantId).select('firstName lastName');
-        if (!enseignant) {
-            console.log('No enseignant found with this ID');
-            return res.status(404).send('No enseignant found with this ID');
+        // Filtrer les séances pour ne garder que celles de l'enseignant spécifié
+        const filteredSeances = allSeances.filter(seance => seance.enseignant._id.toString() === enseignantId);
+        console.log ("hdhdhdh   "+ filteredSeances)
+        // Chercher si un emploi du temps existe déjà pour cet enseignant à la date de début spécifiée
+        let emploiEnseignant = await EmploiEnseignant.findOne({ enseignant: enseignantId, date_debut: emploi.date_debut });
+
+        // Si l'emploi de l'enseignant existe déjà
+        if (emploiEnseignant) {
+            // Mettre à jour la date de fin si nécessaire
+            if (emploi.date_fin > emploiEnseignant.date_fin) {
+                emploiEnseignant.date_fin = emploi.date_fin;
+            }
+        } else {
+            // Si l'emploi de l'enseignant n'existe pas, créer un nouvel emploi
+            emploiEnseignant = new EmploiEnseignant({
+                year: new Date().getFullYear(),
+                enseignant: enseignantId,
+                date_debut: emploi.date_debut,
+                date_fin: emploi.date_fin,
+                seances: []
+            });
         }
 
-        const enseignantName = `${enseignant.firstName}_${enseignant.lastName}`;
+        // Vérifier la date de fin des séances filtrées
+        filteredSeances.forEach(seance => {
+            if (new Date(seance.date) > emploiEnseignant.date_fin) {
+                emploiEnseignant.date_fin = new Date(seance.date);
+            }
+        });
 
+        // Ajouter les séances filtrées à l'emploiEnseignant
+        emploiEnseignant.seances = filteredSeances.map(seance => seance._id);
+
+        // Générer le PDF pour l'emploi du temps de l'enseignant
         // Ajouter les horaires de séance en tant qu'en-têtes de colonne
         const seanceTimes = ['08:00 - 09:00', '09:00 - 10:00', '10:00 - 11:00', '11:00 - 12:00', '13:00 - 14:00', '14:00 - 15:00', '15:00 - 16:00', '16:00 - 17:00'];
 
-        // Créer l'objet des jours de la semaine avec les dates appropriées
-        const joursSemaine = {
-            lundi: new Date(emploi.date_debut),
-            mardi: new Date(emploi.date_debut),
-            mercredi: new Date(emploi.date_debut),
-            jeudi: new Date(emploi.date_debut),
-            vendredi: new Date(emploi.date_debut),
-            samedi: new Date(emploi.date_debut)
-        };
-
-        // Ajuster les dates pour chaque jour de la semaine
-        Object.keys(joursSemaine).forEach((jour, index) => {
-            joursSemaine[jour].setDate(joursSemaine[jour].getDate() + index);
-        });
-
-        // Initialize timetable data structure
+        // Initialiser la structure de données du tableau pour chaque semaine
         const timetable = {};
-        const dates = Object.keys(joursSemaine); // Stocker les jours de la semaine
+        const dates = [];
 
-        // Initialiser toutes les combinaisons de jours et d'heures de début dans timetable
-        dates.forEach(date => {
-            timetable[date] = {};
-            seanceTimes.forEach(time => {
-                timetable[date][time] = [];
+        // Parcourir chaque semaine de l'emploi du temps
+        const currentDate = new Date(emploi.date_debut);
+        while (currentDate <= new Date(emploi.date_fin)) {
+            // Initialiser les jours de la semaine pour la semaine en cours
+            const joursSemaine = {
+                lundi: new Date(currentDate),
+                mardi: new Date(currentDate),
+                mercredi: new Date(currentDate),
+                jeudi: new Date(currentDate),
+                vendredi: new Date(currentDate),
+                samedi: new Date(currentDate)
+            };
+
+            // Ajuster les dates pour chaque jour de la semaine
+            Object.keys(joursSemaine).forEach((jour, index) => {
+                joursSemaine[jour].setDate(joursSemaine[jour].getDate() + index);
             });
-        });
 
-        // Filtrer les séances pour ne conserver que celles de l'enseignant spécifié
-        const filteredSeances = emploi.seances.filter(seance => seance.enseignant._id.toString() === enseignantId);
+            // Stocker les dates de la semaine
+            dates.push(...Object.keys(joursSemaine).map(date => joursSemaine[date].toDateString()));
+
+            // Initialiser l'emploi du temps pour la semaine en cours
+            const weekDates = Object.keys(joursSemaine);
+
+            // Stocker les dates dans timetable
+            weekDates.forEach(date => {
+                const dateString = joursSemaine[date].toDateString();
+                timetable[dateString] = {};
+                seanceTimes.forEach(time => {
+                    timetable[dateString][time] = [];
+                });
+            });
+
+            // Passer à la semaine suivante
+            currentDate.setDate(currentDate.getDate() + 7);
+        }
 
         // Remplir la structure du tableau avec les données des séances filtrées
         filteredSeances.forEach(seance => {
             const seanceDate = new Date(seance.date);
-            const seanceDay = seanceDate.toLocaleDateString('fr-FR', { weekday: 'long' }).toLowerCase(); // Obtenez le jour de la semaine en minuscules
+            const seanceDay = seanceDate.toDateString();
             const startTime = `${seance.heure_debut.toString().padStart(2, '0')}:00 - ${seance.heure_fin.toString().padStart(2, '0')}:00`;
 
             // Vérifier si la combinaison de jour et d'heure de début existe dans timetable
@@ -607,7 +722,8 @@ const generateTimetableForTeacherPDF = async (emploiId, enseignantId) => {
                 timetable[seanceDay][startTime].push({
                     matiere: seance.matiere.nom,
                     enseignant: `${seance.enseignant.firstName} ${seance.enseignant.lastName}`,
-                    salle: seance.salle.name
+                    salle: seance.salle.name,
+                    classe: seance.class.name // Inclure la classe
                 });
             } else {
                 console.log(`Combinaison invalide de jour et d'heure: ${seanceDay}, ${startTime}`);
@@ -615,7 +731,10 @@ const generateTimetableForTeacherPDF = async (emploiId, enseignantId) => {
         });
 
         // Générer le PDF
-        const doc = new PDFDocument({ layout: 'landscape' }); // Changer la disposition en paysage
+        const doc = new PDFDocument({ layout: 'landscape' });
+        const enseignant = await User.findById(enseignantId).select('firstName lastName');
+        const enseignantName = enseignant ? `${enseignant.firstName}_${enseignant.lastName}` : 'unknown';
+
         const fileName = `emploi_${emploiId}_enseignant_${enseignantId}_${Date.now()}.pdf`;
         const filePath = path.join(__dirname, '..', 'uploads', 'emplois', enseignantName, fileName);
 
@@ -636,7 +755,7 @@ const generateTimetableForTeacherPDF = async (emploiId, enseignantId) => {
         const tableY = (doc.page.height - tableHeight) / 2; // Position Y du tableau pour le centrer
 
         // Ajouter le titre centré
-        doc.text(`Emploi du temps de la classe ${emploi.class.name} du ${emploi.date_debut.toDateString()} au ${emploi.date_fin.toDateString()}`, { align: 'center' });
+        doc.text(`Emploi du temps de l'enseignant ${enseignantName} du ${emploi.date_debut.toDateString()} au ${emploi.date_fin.toDateString()}`, { align: 'center' });
 
         // Ajouter une marge supérieure après le titre
         doc.moveDown(2);
@@ -653,7 +772,7 @@ const generateTimetableForTeacherPDF = async (emploiId, enseignantId) => {
         });
 
         // Taille de la police pour les séances
-        const seanceFontSize = 7;
+        const seanceFontSize = 5.5;
 
         // Parcourir les jours et les horaires des séances pour remplir le tableau
         dates.forEach((date, rowIndex) => {
@@ -661,7 +780,7 @@ const generateTimetableForTeacherPDF = async (emploiId, enseignantId) => {
                 const seances = timetable[date][time] || [];
                 let rowData = '';
                 seances.forEach(seance => {
-                    rowData += `${seance.matiere}\n${seance.enseignant}\n${seance.salle}\n\n`;
+                    rowData += `${seance.matiere}\n${seance.enseignant}\n${seance.salle}\n${seance.classe}\n\n`;
                 });
                 // Dessiner une bordure autour de chaque cellule
                 doc.rect(tableX + colIndex * cellWidth, tableY + (rowIndex + 1) * cellHeight, cellWidth, cellHeight).stroke();
@@ -672,10 +791,13 @@ const generateTimetableForTeacherPDF = async (emploiId, enseignantId) => {
 
         doc.end();
 
-        emploi.file = fileName; // Mettre à jour le champ du nom du fichier
-        await emploi.save();
-        return filePath;
+        // Mettre à jour le champ file de emploiEnseignant
+        emploiEnseignant.file = fileName;
 
+        // Sauvegarder l'emploi du temps de l'enseignant
+        await emploiEnseignant.save();
+        //res.status(200).send(filePath);
+        return filePath;
     } catch (err) {
         console.error('Error generating PDF:', err);
         if (!res.headersSent) {
@@ -684,17 +806,18 @@ const generateTimetableForTeacherPDF = async (emploiId, enseignantId) => {
     }
 };
 
+
 const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
-      user: "t0429597@gmail.com",
-      pass: "frrz sozl ivqu fudj",
+        user: "t0429597@gmail.com",
+        pass: "frrz sozl ivqu fudj",
     },
     secure: true, // Utilisez le port sécurisé
     port: 587, // Port sécurisé pour Gmail
-  });
-  
-  const sendEmail = (to, subject, text, filePath) => {
+});
+
+const sendEmail = (to, subject, text, filePath) => {
     const mailOptions = {
         from: 't0429597@gmail.com',
         to,
@@ -841,18 +964,12 @@ const generateAndSendGlobalTimetable = async (req, res) => {
 
         // Générer l'emploi du temps global et enregistrer le PDF
         const globalTimetablePath = await generateTimetablePDF(emploiId);
-
+        console.log("hhdhdhhdhdhdhdh : " + globalTimetablePath)
         // Récupérer les emails des parents des étudiants de la classe
         const parentEmails = await getEmailsOfParentsOfClassStudents(emploiId);
 
         // Envoyer l'emploi du temps global par email aux parents
         await Promise.all(parentEmails.map(email => sendEmail(email, 'Emploi du Temps Global', 'Voici l\'emploi du temps de votre enfant.', globalTimetablePath)));
-
-        // Récupérer les emails des étudiants de la classe
-        const studentEmails = await getEmailsOfClassStudents(emploiId);
-
-        // Envoyer l'emploi du temps global par email aux étudiants
-        await Promise.all(studentEmails.map(email => sendEmail(email, 'Emploi du Temps Global', 'Voici votre emploi du temps.', globalTimetablePath)));
 
         // Récupérer les IDs des enseignants
         const teacherIds = await getTeacherIdsByEmploiId(emploiId);
@@ -866,7 +983,7 @@ const generateAndSendGlobalTimetable = async (req, res) => {
             }
         }
 
-        res.status(200).send('Emploi du temps généré et envoyé avec succès.');
+        res.status(200).send({message : 'Emploi du temps généré et envoyé avec succès.'});
     } catch (error) {
         console.error('Error generating and sending timetables:', error);
         if (!res.headersSent) {
@@ -875,10 +992,29 @@ const generateAndSendGlobalTimetable = async (req, res) => {
     }
 };
 
+const emploiByParent = async (req, res) => {
+    try {
+        const parentId = req.params.id;
+        
+        // Récupérer les étudiants de ce parent
+        const etudiants = await Etudiant.find({ id_user: parentId }).populate('classe');
+        console.log('Les étudiants : ', etudiants);
+        
+        // Extraire les IDs des classes des étudiants
+        const classeIds = etudiants.map(etudiant => etudiant.classe._id);
+        console.log("Les IDs des classes des étudiants : ", classeIds);
+        
+        // Récupérer les emplois du temps de ces classes
+        const emplois = await Emploi.find({ class: { $in: classeIds } }).populate('class seances');
+        console.log ("Les emplois du temps : ", emplois);
 
-
-
-
+        // Répondre avec les emplois du temps et les étudiants
+        res.status(200).json({ emplois });
+    } catch (error) {
+        console.error("Erreur lors de la récupération des emplois par parent :", error);
+        res.status(500).json({ error: 'Une erreur est survenue' });
+    }
+}
 
 
 
@@ -897,5 +1033,6 @@ module.exports = {
     getEmailsOfParentsOfClassStudents,
     getTeacherIdsByEmploiId,
     getEmailsOfTeachersByEmploiId,
-    generateAndSendGlobalTimetable
+    generateAndSendGlobalTimetable,
+    emploiByParent
 };
