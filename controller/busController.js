@@ -62,7 +62,10 @@ async function update(req, res, next) {
     const oldChauffeurId = bus.chauffeur;
     const newChauffeurId = req.body.chauffeur;
 
-    await Bus.findByIdAndUpdate(req.params.id, req.body);
+    // Remove matricule from req.body to prevent its update
+    const { matricule, ...updateData } = req.body;
+
+    await Bus.findByIdAndUpdate(req.params.id, updateData);
 
     if (oldChauffeurId && oldChauffeurId.toString() !== newChauffeurId) {
       const oldChauffeur = await Chauffeur.findById(oldChauffeurId);
@@ -108,9 +111,7 @@ async function deleteBus(req, res, next) {
 }
 async function getBus(req, res, next) {
   try {
-    const bus = await Bus.findById(req.params.id).populate(
-      "chauffeur"
-    );
+    const bus = await Bus.findById(req.params.id).populate("chauffeur");
     if (!bus) {
       return res.status(404).send("chauffeur not found");
     }
@@ -161,7 +162,7 @@ async function showChauffeur(req, res, next) {
 }
 async function getChauffeurId(req, res, next) {
   try {
-    const bus = await Chauffeur.findById(req.params.id)
+    const bus = await Chauffeur.findById(req.params.id);
     if (!bus) {
       return res.status(404).send("chauffeur not found");
     }
@@ -181,5 +182,5 @@ module.exports = {
   deleteChauffeur,
   showChauffeur,
   getBus,
-  getChauffeurId
+  getChauffeurId,
 };
