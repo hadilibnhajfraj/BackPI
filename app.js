@@ -55,7 +55,7 @@ const chequerouter = require("./routes/cheque");
 const facturerouter = require("./routes/facture");
 const fraisrouter = require("./routes/frais");
 const banquerouter = require("./routes/banque");
-const userrouter = require("./routes/user");
+const userrouter = require("./routes/userRoutes.js");
 const virementrouter = require("./routes/virement");
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "twig");
