@@ -50,7 +50,13 @@ const observationRouter = require("../BackPI/routes/observation.js");
 const userRouter = require("../BackPI/routes/userRoutes.js");
 const matiereRouter = require("../BackPI/routes/matiere.js");
 const devoirRouter = require("../BackPI/routes/devoir.js");
-
+const offrerouter = require("./routes/offre");
+const chequerouter = require("./routes/cheque");
+const facturerouter = require("./routes/facture");
+const fraisrouter = require("./routes/frais");
+const banquerouter = require("./routes/banque");
+const userrouter = require("./routes/user");
+const virementrouter = require("./routes/virement");
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "twig");
 
@@ -81,7 +87,14 @@ app.use("/observation", observationRouter);
 app.use("/users", userRouter);
 app.use("/matiere", matiereRouter);
 app.use("/devoir", devoirRouter);
-
+// Définir les routes
+app.use("/offre", offrerouter);
+app.use("/cheque", chequerouter);
+app.use("/facture", facturerouter);
+app.use("/frais", fraisrouter);
+app.use("/banque", banquerouter);
+app.use("/user", userrouter);
+app.use("/virement", virementrouter);
 
 app.use('/uploads', express.static('uploads'));
 

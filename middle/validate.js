@@ -5,6 +5,11 @@ const validate = async (req, res, next) => {
       //name: yup.string().required(),
       email: yup.string().email().required(),
       //nbrstudent: yup.number().required(),
+      nom: yup.string().required(),
+      //email: yup.string().email().required(),
+      remise: yup.number().required(),
+      montant: yup.number().required(),
+
     });
     await Schema.validate(req.body);
     next();
@@ -15,3 +20,4 @@ const validate = async (req, res, next) => {
 };
 
 module.exports = validate;
+
