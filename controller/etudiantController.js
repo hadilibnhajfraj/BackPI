@@ -9,7 +9,7 @@ async function add(req, res, next) {
     const savedEtudiant = await etudiant.save();
 
     // Ajouter l'ID de l'étudiant à la classe correspondante
-    await Classe.findByIdAndUpdate(req.body.class, {
+    await Classe.findByIdAndUpdate(req.body.classe, {
       $push: { students: savedEtudiant._id }
     });
 
