@@ -9,7 +9,7 @@ const PDFDocument = require('pdfkit');
 const fs = require('fs');
 const path = require('path');
 const nodemailer = require('nodemailer');
-const Etudiant = require('../model/etudiant');
+const Etudiant = require('../model/eleve');
 const EmploiEnseignant = require('../model/emploieEnseignant')
 
 
@@ -198,7 +198,7 @@ async function deleted(req, res, next) {
         // Delete the emploi
         await Emploi.findByIdAndDelete(emploiId);
 
-        res.send("Emploi and associated seances removed");
+        res.json("Emploi and associated seances removed");
     } catch (err) {
         console.log(err);
         res.status(500).json({ message: 'An error occurred while deleting the emploi' });
@@ -967,6 +967,7 @@ const generateAndSendGlobalTimetable = async (req, res) => {
         console.log("hhdhdhhdhdhdhdh : " + globalTimetablePath)
         // Récupérer les emails des parents des étudiants de la classe
         const parentEmails = await getEmailsOfParentsOfClassStudents(emploiId);
+        console.log("Les emails des parents : ", parentEmails);
 
         // Envoyer l'emploi du temps global par email aux parents
         await Promise.all(parentEmails.map(email => sendEmail(email, 'Emploi du Temps Global', 'Voici l\'emploi du temps de votre enfant.', globalTimetablePath)));

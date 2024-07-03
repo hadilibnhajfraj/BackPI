@@ -3,7 +3,7 @@ const Salle = require('../model/salle'); // Assuming you have a Salle model
 const User = require('../model/user');
 const nodemailer = require('nodemailer');
 const Classe = require("../model/class");
-const Etudiant = require('../model/etudiant');
+const Etudiant = require('../model/eleve');
 const Emploi = require('../model/emploi')
 
 async function add(req, res, next) {
@@ -165,9 +165,11 @@ async function cancelSeance(req, res) {
     // Récupérer les étudiants de la classe
     const classDetails = await Classe.findById(seanceClass._id).populate('students');
     const students = classDetails.students;
+    console.log ("sddd : " + students )
 
     // Récupérer les parents des étudiants
     const parentIds = students.map(student => student.id_user);
+    console.log("parents : " + parentIds)
     const parents = await User.find({ _id: { $in: parentIds }, authorities: 'parent' });
 
     // Récupérer tous les administrateurs

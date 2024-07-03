@@ -1,4 +1,4 @@
-const Etudiant = require("../model/etudiant");
+const Etudiant = require("../model/eleve");
 const Classe = require("../model/class");
 const User = require("../model/user");
 

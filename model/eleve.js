@@ -17,4 +17,4 @@ const EtudiantSchema = new Schema({
     classe: { type: Schema.Types.ObjectId, ref: 'Classe', required: true },
 });
 
-module.exports = mongoose.model("Etudiant", EtudiantSchema);
+module.exports = mongoose.model("Eleve", EtudiantSchema);

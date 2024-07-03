@@ -1,6 +1,6 @@
 const Classe = require("../model/class");
 const Enseignant = require('../model/user');
-const Etudiant = require('../model/etudiant');
+const Etudiant = require('../model/eleve');
 const Cours = require('../model/cours');
 const Emploi = require('../model/emploi');
 
