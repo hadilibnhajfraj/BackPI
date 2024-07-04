@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const Classe = new Schema({
+const lesclasse = new Schema({
     name: { type: String, required: true }, // Name of the class, required
     level: { 
         type: String, 
@@ -24,4 +24,4 @@ const Classe = new Schema({
     emploies:[{ type: Schema.Types.ObjectId, ref: 'emploi' }]
 });
 
-module.exports = mongoose.model("Classe", Classe);
+module.exports = mongoose.model("lesclasse", lesclasse);

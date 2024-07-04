@@ -108,7 +108,7 @@ app.use("/user", userrouter);
 app.use("/virement", virementrouter);
 app.use('/salle', salleRoute);
 app.use('/matiere', matiereRoute);
-app.use('/etudiant', etudiantRoute);
+app.use('/etudiants', etudiantRoute);
 app.use('/emploie', emploieRoute);
 app.use('/cours', coursRoute);
 app.use('/classe', classRoute);

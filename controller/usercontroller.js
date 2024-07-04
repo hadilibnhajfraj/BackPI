@@ -347,3 +347,11 @@ exports.resetPassword = async (req, res, next) => {
     return res.status(500).json({ status: "internal server error" });
   }
 };
+exports.showParents = async  (req, res, next) => {
+  try {
+    const parents = await User.find({ authorities: 'parent' }); // Assuming role field distinguishes parents
+    res.json(parents);
+  } catch (err) {
+    console.log(err);
+  }
+}

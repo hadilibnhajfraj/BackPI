@@ -16,4 +16,5 @@ router.put("/resetpassword/:email", userController.resetPassword);
 router.get("/resetpasswordcode/:id/:token", userController.resetPasswordCode);
 router.post("/resetCode/:email", userController.verifyResetCode);
 router.patch('/validate/:userId', userController.validateUser);
+router.get("/showParents", userController.showParents);
 module.exports = router;

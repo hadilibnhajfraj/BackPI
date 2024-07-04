@@ -6,9 +6,9 @@ const Seance = new Schema({
     emploie: { type: Schema.Types.ObjectId, ref: 'Emploi', required: true },
     heure_debut: { type: Number, required: true },
     heure_fin: { type: Number, required: true },
-    matiere: { type: Schema.Types.ObjectId, ref: 'Matiere', required: true },
+    matiere: { type: Schema.Types.ObjectId, ref: 'lesmatiere', required: true },
     salle: { type: Schema.Types.ObjectId, ref: 'Salle', required: true },
-    class: { type: Schema.Types.ObjectId, ref: 'Classe', required: true },
+    class: { type: Schema.Types.ObjectId, ref: 'lesclasse', required: true },
     enseignant: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     date: { type: Date, required: true } // New date field
 });
