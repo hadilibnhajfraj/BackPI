@@ -1,3 +1,4 @@
+
 const Classe = require ("../model/classes");
 
 async function add(req, res, next){
@@ -55,6 +56,35 @@ async function showByone(req, res, next) {
         console.log(err)
     }
 };
+async function showClass(req, res, next) {
+  try {
+    const data = await Classe.find()
+      .populate({
+        path: 'teachers',
+        model: Enseignant,
+        select: 'firstName lastName'
+      })
+      .populate({
+        path: 'students',
+        model: Etudiant,
+        select: 'prenom nom'
+      }).populate({
+        path: 'courses',
+        model: Cours,
+        select: 'nom'
+      }).populate({
+        path: 'emploies',
+        model: Emploi,
+        select: 'file'
+      });
+    res.json(data);
+  } catch (err) {
+    console.log(err);
+    res.status(500).send('Erreur serveur');
+  }
+}
+
+module.exports = { add, show, updated, deleted, allbyId, showByone , showClass };
 
 
-module.exports = { add, show, updated, deleted, allbyId, showByone };
+

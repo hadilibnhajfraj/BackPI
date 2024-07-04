@@ -1,3 +1,4 @@
+
 const http = require("http");
 const express = require("express");
 const mongoose = require("mongoose");
@@ -58,6 +59,15 @@ const fraisrouter = require("./routes/frais");
 const banquerouter = require("./routes/banque");
 const userrouter = require("./routes/userRoutes.js");
 const virementrouter = require("./routes/virement");
+const classRoute = require('./routes/classeRoute');
+const coursRoute = require('./routes/coursRoutes');
+const emploieRoute = require('./routes/emploieRoute');
+const emploieEnseignantRoute = require('./routes/emploieEnseignantRoute');
+const etudiantRoute = require('./routes/etudiantRoute');
+const matiereRoute = require('./routes/matiereRoute');
+const salleRoute = require('./routes/salleRoute');
+const seanceRoute = require('./routes/seanceRoute');
+const userRoute = require('./routes/userRoute');
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "twig");
 
@@ -96,7 +106,15 @@ app.use("/frais", fraisrouter);
 app.use("/banque", banquerouter);
 app.use("/user", userrouter);
 app.use("/virement", virementrouter);
-
+app.use('/user', userRoute);
+app.use('/salle', salleRoute);
+app.use('/matiere', matiereRoute);
+app.use('/etudiant', etudiantRoute);
+app.use('/emploie', emploieRoute);
+app.use('/cours', coursRoute);
+app.use('/classe', classRoute);
+app.use('/seance', seanceRoute);
+app.use('/emploiEnseignant', emploieEnseignantRoute);
 app.use('/uploads', express.static('uploads'));
 
 
@@ -104,5 +122,3 @@ const server = http.createServer(app);
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });
-
-module.exports = app;
