@@ -67,7 +67,7 @@ const etudiantRoute = require('./routes/etudiantRoute');
 const matiereRoute = require('./routes/matiereRoute');
 const salleRoute = require('./routes/salleRoute');
 const seanceRoute = require('./routes/seanceRoute');
-const userRoute = require('./routes/userRoute');
+
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "twig");
 
@@ -106,7 +106,6 @@ app.use("/frais", fraisrouter);
 app.use("/banque", banquerouter);
 app.use("/user", userrouter);
 app.use("/virement", virementrouter);
-app.use('/user', userRoute);
 app.use('/salle', salleRoute);
 app.use('/matiere', matiereRoute);
 app.use('/etudiant', etudiantRoute);
