@@ -44,7 +44,7 @@ async function show(req, res, next) {
           select: "firstName lastName",
         },
         {
-          path: "lesmatiere",
+          path: "matiere",
           model: lesmatiere,
           select: "nom",
         },
@@ -130,28 +130,24 @@ async function showById(req, res, next) {
         populate: [
           { path: "salle", model: Salle, select: "name" },
           { path: "enseignant", model: User, select: "firstName lastName" },
-          { path: "lesmatiere", model: lesmatiere, select: "nom" },
+          { path: "matiere", model: lesmatiere, select: "nom" },
           { path: "class", model: Classe, select: "name" },
         ],
       })
       .populate("enseignant", "firstName lastName"); // Optionnel : pour ne récupérer que les noms de l'enseignant
 
     if (!data || data.length === 0) {
-      return res
-        .status(404)
-        .json({
-          error: "Aucun emploi enseignant trouvé pour cet ID d'enseignant",
-        });
+      return res.status(404).json({
+        error: "Aucun emploi enseignant trouvé pour cet ID d'enseignant",
+      });
     }
 
     res.status(200).json(data);
   } catch (err) {
     console.log(err);
-    res
-      .status(500)
-      .json({
-        error: "Une erreur s'est produite lors de la récupération des données.",
-      });
+    res.status(500).json({
+      error: "Une erreur s'est produite lors de la récupération des données.",
+    });
   }
 }
 

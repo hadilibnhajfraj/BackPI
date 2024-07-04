@@ -421,7 +421,7 @@ async function showByClassId(req, res, next) {
             select: "firstName lastName",
           },
           {
-            path: "lesmatiere",
+            path: "matiere",
             model: lesmatiere,
             select: "nom",
           },
