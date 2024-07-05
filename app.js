@@ -6,6 +6,7 @@ const bodyParser = require("body-parser");
 const mongoconnect = require("./config/dbconnection.json");
 const path = require("path");
 const cors = require('cors');
+const { afficherConversation } = require("./controller/mesageController");
 require('dotenv').config();
 
 const app = express();
@@ -67,7 +68,11 @@ const etudiantRoute = require('./routes/etudiantRoute');
 const matiereRoute = require('./routes/matiereRoute');
 const salleRoute = require('./routes/salleRoute');
 const seanceRoute = require('./routes/seanceRoute');
+var messageRouter = require("../BackPI/routes/messageroute");
 
+var etudiantRoute = require("../BackPI/routes/etudiantRoute");
+var reclamationRoute = require("../BackPI/routes/reclamationRoute");
+var responceRoute = require("../BackPI/routes/responceRoute");
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "twig");
 
@@ -114,9 +119,38 @@ app.use('/cours', coursRoute);
 app.use('/classe', classRoute);
 app.use('/seance', seanceRoute);
 app.use('/emploiEnseignant', emploieEnseignantRoute);
+app.use("/etudiant", etudiantRoute);
+app.use("/reclamation", reclamationRoute);
+app.use("/responce", responceRoute);
+app.use("/message", messageRouter);
 app.use('/uploads', express.static('uploads'));
 
+const io = require("socket.io")(server, {
+  cors: {
+    origin: "http://localhost:4200",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  },
+});
 
+io.on("connection", (socket) => {
+  console.log("user connected");
+
+  socket.on("fetchConversation", async ({ id1, id2 }) => {
+    try {
+      const data = await afficherConversation(id1, id2);
+      io.emit("conversationData", data);
+    } catch (err) {
+      console.error("Error fetching conversation:", err);
+      socket.emit("conversationError", { error: "Internal Server Error" });
+    }
+  });
+
+  socket.on("disconnect", () => {
+    console.log("user disconnected");
+    io.emit("msg", "user disconnected");
+  });
+});
 const server = http.createServer(app);
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
