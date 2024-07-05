@@ -1,45 +1,42 @@
 const mongoose = require("mongoose");
-const Schema = mongoose.Schema;
 
-const messageSchema = new Schema({
+const messageSchema = new mongoose.Schema(
+  {
     id_user_envoie: {
-        type: Schema.Types.ObjectId,
-        refPath: 'envoieModel',
-        required: true
-    },
-    envoieModel: {
-        type: String,
-        required: true,
-        enum: ['User', 'Etudiant']
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      refPath: "envoieModel",
     },
     id_user_receive: {
-        type: Schema.Types.ObjectId,
-        refPath: 'receiveModel',
-        required: true
+      type: mongoose.Schema.Types.ObjectId,
+      required: true,
+      refPath: "receiveModel",
+    },
+    envoieModel: {
+      type: String,
+      required: true,
+      enum: ["User", "Etudiant"],
     },
     receiveModel: {
-        type: String,
-        required: true,
-        enum: ['User', 'Etudiant']
+      type: String,
+      required: true,
+      enum: ["User", "Etudiant"],
     },
-    message: String,
+    message: {
+      type: String,
+      required: false,
+    },
     image: {
-        type: String,
-        default: null
+      type: String,
+      required: false,
     },
     fichier: {
-        type: String,
-        default: null
+      type: String,
+      required: false,
     },
-    timestamp: { 
-        type: Date, 
-        default: Date.now 
-    },
-    etat: { 
-        type: String, 
-        enum: ['lu', 'non lu'], // Options autorisées pour l'état
-        default: 'non lu' // Valeur par défaut pour l'état
-    },
-});
+  },
+  { timestamps: true }
+);
 
-module.exports = mongoose.model("Message", messageSchema);
+const Message = mongoose.model("Message", messageSchema);
+module.exports = Message;

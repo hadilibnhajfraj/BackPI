@@ -5,7 +5,7 @@ async function add(req, res, next) {
     try {
         const reclamation = new REclamation(req.body);
         await reclamation.save();
-        res.status(200).send("reclation added successfully");
+        res.status(200).json("reclation added successfully");
     } catch (err) {
         console.error(err);
     }
@@ -21,13 +21,13 @@ async function show(req, res, next) {
 async function update(req, res, next) {
     try {
         const data = await REclamation.findByIdAndUpdate(req.params.id, req.body).populate('user', 'firstName lastName');
-        res.send("updated");
+        res.json("updated");
     } catch (err) {  console.log(err); }
 }
 async function deletreclamation(req, res, next) {
     try {
         const data = await REclamation.findByIdAndDelete(req.params.id, req.body);
-        res.send("removed");
+        res.json("removed");
     }
     catch (err) { console.log(err); }
 }
@@ -39,8 +39,10 @@ async function getReclamationAndMarkAsRead(req, res, next) {
         // Extract the reclamation ID from the request parameters
         const { id } = req.params;
 
-        // Find the reclamation by ID and update its status to "lu"
-        const reclamation = await REclamation.findByIdAndUpdate(id, { etat: 'lu' }, { new: true });
+        // Find the reclamation by ID, update its status to "lu", and populate the user field
+        const reclamation = await REclamation.findByIdAndUpdate(id, { etat: 'lu' }, { new: true })
+            .populate('user', 'firstName lastName');
+
 
         // If reclamation is not found, return a 404 response
         if (!reclamation) {
@@ -84,10 +86,22 @@ async function findOne(req, res, next) {
         res.status(500).send('An error occurred while fetching the reclamation.');
     }
 };
-
+async function getReclamation(req, res, next) {
+    try {
+      const bus = await REclamation.findById(req.params.id) .populate('user', 'firstName lastName');
+      if (!bus) {
+        return res.status(404).json("reclamation not found");
+      }
+      res.json(bus);
+    } catch (err) {
+      console.log(err);
+      res.status(500).json("Error fetching chauffeur");
+    }
+  }
+  
 async function genererNotificationReclamation(req, res) {
     try {
-        // Rechercher toutes les réclamations non lues
+        // Rechercher toutes les réclamations non luesa
         const unreadReclamations = await REclamation.find({
             etat: 'non lu' // Vérifier l'état de la réclamation
         }).populate('user'); // Populer le champ 'user' pour obtenir les détails de l'utilisateur
@@ -101,7 +115,7 @@ async function genererNotificationReclamation(req, res) {
                 };
             });
 
-            res.status(200).json({ notifications, notification: `Vous avez ${unreadReclamations.length} nouveaux reclamation(s).` }); // Envoyer la notification dans la réponse
+            res.status(200).json(unreadReclamations.length); // Envoyer la notification dans la réponse
         } else {
             res.status(200).json({ notification: "Aucune nouvelle réclamation non lue." }); // Si aucune réclamation non lue n'est trouvée
         }
@@ -121,5 +135,6 @@ module.exports = {
     deletreclamation,
     getReclamationAndMarkAsRead,
     findOne,
-    genererNotificationReclamation
+    genererNotificationReclamation,
+    getReclamation
 }

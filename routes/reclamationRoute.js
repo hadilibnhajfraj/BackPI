@@ -7,7 +7,9 @@ router.put('/update/:id', reclamationController.update);
 router.delete('/delete/:id', reclamationController.deletreclamation);
 router.get('/lire/:id', reclamationController.getReclamationAndMarkAsRead);
 router.get('/find/:id', reclamationController.findOne);
+router.get('/findreclamation/:id', reclamationController.getReclamation);
 router.get('/notification', reclamationController.genererNotificationReclamation);
+
 
 
 

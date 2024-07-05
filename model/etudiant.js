@@ -10,6 +10,8 @@ const Etudiant = new Schema({
     situation_familiale: String,
     id_user: { type: Schema.Types.ObjectId, ref: 'User' },
     activated: { type: Boolean, default: false },
+    email:{ type: String , required: true },
+    class: { type: Schema.Types.ObjectId, ref: 'Classe' , required: true },
 
 });
 

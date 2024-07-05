@@ -9,12 +9,12 @@ const reclamationSchema = new Schema({
     },
     type: {
         type: String,
-        um: [
-            'Problème de transport',
-            'Problème de repas',
-            'Problème d\'activité',
-            'Problème concernant un étudiant',
-            'Problème concernant un enseignant',
+        enum: [
+            'Probleme de transport',
+            'Probleme de repas',
+            'Probleme activite',
+            'Probleme concernant un etudiant',
+            'Probleme concernant un enseignant',
             'Autres'
         ],
         required: true
@@ -29,7 +29,7 @@ const reclamationSchema = new Schema({
     },
     etat: {
         type: String,
-        enum: ['lu', 'non lu', 'traité'],
+        enum: ['lu', 'non lu', 'traite'],
         default: 'non lu'
     },
     responses: [{
