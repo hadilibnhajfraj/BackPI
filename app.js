@@ -35,7 +35,7 @@ app.use((req, res, next) => {
   next();
 });
 var messageRouter = require("../BackPI/routes/messageroute");
-var userRoute = require("../BackPI/routes/userroute");
+
 var etudiantRoute = require("../BackPI/routes/etudiantRoute");
 var reclamationRoute = require("../BackPI/routes/reclamationRoute");
 var responceRoute = require("../BackPI/routes/responceRoute");
@@ -46,7 +46,7 @@ const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use("/message", messageRouter);
-app.use("/user", userRoute);
+
 app.use("/etudiant", etudiantRoute);
 app.use("/reclamation", reclamationRoute);
 app.use("/responce", responceRoute);
