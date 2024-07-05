@@ -64,7 +64,7 @@ const classRoute = require('./routes/classeRoute');
 const coursRoute = require('./routes/coursRoutes');
 const emploieRoute = require('./routes/emploieRoute');
 const emploieEnseignantRoute = require('./routes/emploieEnseignantRoute');
-const etudiantRoute = require('./routes/etudiantRoute');
+//const etudiantRoute = require('./routes/etudiantRoute');
 const matiereRoute = require('./routes/matiereRoute');
 const salleRoute = require('./routes/salleRoute');
 const seanceRoute = require('./routes/seanceRoute');
@@ -119,12 +119,18 @@ app.use('/cours', coursRoute);
 app.use('/classe', classRoute);
 app.use('/seance', seanceRoute);
 app.use('/emploiEnseignant', emploieEnseignantRoute);
-app.use("/etudiant", etudiantRoute);
+//app.use("/etudiant", etudiantRoute);
 app.use("/reclamation", reclamationRoute);
 app.use("/responce", responceRoute);
 app.use("/message", messageRouter);
 app.use('/uploads', express.static('uploads'));
+const server = http.createServer(app);
+const corsOptionss = {
+  origin: "http://localhost:4200",
+  credentials: true,
+};
 
+app.use(cors(corsOptionss));
 const io = require("socket.io")(server, {
   cors: {
     origin: "http://localhost:4200",
@@ -133,25 +139,26 @@ const io = require("socket.io")(server, {
   },
 });
 
-io.on("connection", (socket) => {
-  console.log("user connected");
+io.on('connection', (socket) => {
+  console.log('Un client est connecté');
 
-  socket.on("fetchConversation", async ({ id1, id2 }) => {
-    try {
-      const data = await afficherConversation(id1, id2);
-      io.emit("conversationData", data);
-    } catch (err) {
-      console.error("Error fetching conversation:", err);
-      socket.emit("conversationError", { error: "Internal Server Error" });
-    }
+  socket.on('msgs', (msg) => {
+    console.log('Message reçu : ', msg);
+    // Faire quelque chose avec le message reçu, comme le transmettre à d'autres utilisateurs
+    socket.broadcast.emit('msgs', msg); // Envoyer le message à tous les autres clients connectés
   });
 
-  socket.on("disconnect", () => {
-    console.log("user disconnected");
-    io.emit("msg", "user disconnected");
+  socket.on('fetchConversation', ({ id1, id2 }) => {
+    // Logique pour récupérer la conversation entre id1 et id2
+    const conversation = fetchConversationFromDatabase(id1, id2);
+    socket.emit('conversationData', conversation);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('Client déconnecté');
   });
 });
-const server = http.createServer(app);
+
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });

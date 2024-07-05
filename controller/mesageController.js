@@ -470,40 +470,25 @@ async function getNotification(req, res) {
   try {
     const userId = req.params.userId;
 
-    // Requête pour récupérer les messages non lus reçus par l'utilisateur spécifié
+    // Requête pour récupérer tous les messages reçus par l'utilisateur spécifié
     const messages = await Message.find({
-      id_user_receive: userId,
-      etat: "non lu",
+      id_user_receive: userId  // Assurez-vous que userId est correctement formaté
+      // Vous pouvez également retirer etat: "non lu" pour récupérer tous les messages reçus par l'utilisateur
     })
-      .populate("id_user_envoie", "firstName lastName") // Joindre la collection d'utilisateurs et sélectionner seulement le prénom et le nom de famille
-      .populate("id_user_receive", "firstName lastName") // Joindre la collection d'utilisateurs pour le receveur aussi
+      .populate("id_user_envoie", "firstName lastName")
+      .populate("id_user_receive", "firstName lastName")
       .exec();
 
     // Compter le nombre de messages non lus
     const count = messages.length;
 
-    const formattedMessages = messages.map((msg) => {
-      // Construire le chemin de l'image uniquement si msg.image est défini
-      let imagePath = null;
-      if (msg.image) {
-        imagePath = `uploads/images/${msg.image.replace(/\\/g, '/')}`;
-      }
-
-      // Construire le chemin du fichier uniquement si msg.fichier est défini
-      let fichierPath = null;
-      if (msg.fichier) {
-        fichierPath = `uploads/files/${msg.fichier.replace(/\\/g, '/')}`;
-      }
-
-      return {
-        sender: `${msg.id_user_envoie.firstName} ${msg.id_user_envoie.lastName}`,
-        receiver: `${msg.id_user_receive.firstName} ${msg.id_user_receive.lastName}`,
-        message: msg.message,
-        timestamp: msg.timestamp,
-        image: imagePath, // Utiliser imagePath calculé ou null si msg.image est null
-        fichier: fichierPath, // Utiliser fichierPath calculé ou null si msg.fichier est null
-      };
-    });
+    // Construire la réponse JSON
+    const formattedMessages = messages.map((msg) => ({
+      sender: `${msg.id_user_envoie.firstName} ${msg.id_user_envoie.lastName}`,
+      receiver: `${msg.id_user_receive.firstName} ${msg.id_user_receive.lastName}`,
+      message: msg.message,
+      timestamp: msg.timestamp,
+    }));
 
     res.json({
       count,
